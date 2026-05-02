@@ -26,9 +26,9 @@ function selectInn(id) {
 function render() {
   const t = translations[state.currentLang];
 
-  // 言語ボタン
-  document.getElementById("btn-ja").style.opacity    = state.currentLang === "ja" ? "1" : "0.35";
-  document.getElementById("btn-en").style.opacity    = state.currentLang === "en" ? "1" : "0.35";
+  // 言語ボタン（カプセル背景が白系のため色で強調）
+  document.getElementById("btn-ja").style.color      = state.currentLang === "ja" ? "#dc2626" : "rgba(0,0,0,0.4)";
+  document.getElementById("btn-en").style.color      = state.currentLang === "en" ? "#dc2626" : "rgba(0,0,0,0.4)";
   document.getElementById("btn-ja").style.fontWeight = state.currentLang === "ja" ? "600" : "400";
   document.getElementById("btn-en").style.fontWeight = state.currentLang === "en" ? "600" : "400";
 
