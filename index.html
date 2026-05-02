@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>お遍路OS</title>
+  <title>Ohenro OS</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -25,34 +25,41 @@
     <!-- オーバーレイ -->
     <div class="absolute inset-0 bg-black/50"></div>
 
+    <!-- 言語切替 -->
+    <div class="absolute top-5 right-5 z-20 flex items-center gap-2 text-sm tracking-widest text-white">
+      <button id="btn-ja" onclick="setLanguage('ja')" class="transition-opacity">JP</button>
+      <span class="text-white/30">|</span>
+      <button id="btn-en" onclick="setLanguage('en')" class="transition-opacity">EN</button>
+    </div>
+
     <!-- コンテンツ -->
     <div class="relative z-10 flex flex-col items-center gap-8 text-center">
 
       <!-- 現在地 -->
       <div class="border border-white/40 bg-white/10 text-white/80 text-xs tracking-[0.25em] px-5 py-2 rounded-full backdrop-blur-sm">
-        第 45 番　岩屋寺
+        <span id="location"></span>
       </div>
 
       <!-- タイトル -->
       <div class="flex flex-col items-center gap-2">
-        <h1 class="text-white text-4xl font-semibold tracking-[0.2em]">お遍路OS</h1>
-        <p class="text-white/50 text-xs tracking-[0.3em] uppercase">Your Stay, Your Local Story</p>
+        <h1 id="title" class="text-white text-4xl font-semibold tracking-[0.2em]"></h1>
+        <p id="subtitle" class="text-white/50 text-xs tracking-[0.3em] uppercase"></p>
       </div>
 
       <!-- キャッチコピー -->
-      <p class="text-white text-2xl font-light tracking-wider leading-relaxed">
-        今夜の宿を、選ぼう。
-      </p>
+      <p id="catch" class="text-white text-2xl font-light tracking-wider leading-relaxed"></p>
 
       <!-- CTA -->
       <button
+        id="cta"
         class="mt-2 w-72 bg-red-600 hover:bg-red-700 active:bg-red-800 text-white text-lg font-semibold tracking-widest py-5 rounded-full shadow-2xl transition-colors duration-150"
-      >
-        宿を選ぶ / Choose your stay
-      </button>
+      ></button>
 
     </div>
   </section>
 
+  <script src="config/config.js"></script>
+  <script src="js/i18n.js"></script>
+  <script src="js/app.js"></script>
 </body>
 </html>
