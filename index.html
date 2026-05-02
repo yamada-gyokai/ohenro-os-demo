@@ -14,8 +14,9 @@
 </head>
 <body class="m-0 p-0 overflow-hidden">
 
+  <!-- 背景・共通コンテナ -->
   <section
-    class="relative w-screen h-screen flex flex-col items-center justify-center gap-10 px-6"
+    class="relative w-screen h-screen"
     style="
       background-image: url('assets/images/hero-bg.png');
       background-size: cover;
@@ -25,16 +26,18 @@
     <!-- オーバーレイ -->
     <div class="absolute inset-0 bg-black/50"></div>
 
-    <!-- 言語切替 -->
+    <!-- 言語切替（全画面共通） -->
     <div class="absolute top-5 right-5 z-20 flex items-center gap-2 text-sm tracking-widest text-white">
       <button id="btn-ja" onclick="setLanguage('ja')" class="transition-opacity">JP</button>
       <span class="text-white/30">|</span>
       <button id="btn-en" onclick="setLanguage('en')" class="transition-opacity">EN</button>
     </div>
 
-    <!-- コンテンツ -->
-    <div class="relative z-10 flex flex-col items-center gap-8 text-center">
-
+    <!-- ── Welcome画面 ── -->
+    <div
+      id="screen-welcome"
+      class="absolute inset-0 flex flex-col items-center justify-center gap-8 px-6 text-center"
+    >
       <!-- 現在地 -->
       <div class="border border-white/40 bg-white/10 text-white/80 text-xs tracking-[0.25em] px-5 py-2 rounded-full backdrop-blur-sm">
         <span id="location"></span>
@@ -52,13 +55,42 @@
       <!-- CTA -->
       <button
         id="cta"
-        class="mt-2 w-72 bg-red-600 hover:bg-red-700 active:bg-red-800 text-white text-lg font-semibold tracking-widest py-5 rounded-full shadow-2xl transition-colors duration-150"
+        onclick="goToInn()"
+        class="w-72 bg-red-600 hover:bg-red-700 active:bg-red-800 text-white text-lg font-semibold tracking-widest py-5 rounded-full shadow-2xl transition-colors duration-150"
       ></button>
-
     </div>
+
+    <!-- ── Inn選択画面 ── -->
+    <div
+      id="screen-inn"
+      class="absolute inset-0 flex-col overflow-y-auto px-6 pt-16 pb-10"
+      style="display: none;"
+    >
+      <div class="relative z-10 flex flex-col gap-6 max-w-sm mx-auto w-full">
+
+        <!-- 戻るボタン -->
+        <button
+          id="back-btn"
+          onclick="goBack()"
+          class="self-start text-white/70 text-sm tracking-widest hover:text-white transition-colors"
+        ></button>
+
+        <!-- タイトル -->
+        <h2
+          id="inn-title"
+          class="text-white text-2xl font-semibold tracking-wider"
+        ></h2>
+
+        <!-- 宿カード一覧 -->
+        <div id="inn-list" class="flex flex-col gap-4"></div>
+
+      </div>
+    </div>
+
   </section>
 
   <script src="config/config.js"></script>
+  <script src="js/data.js"></script>
   <script src="js/i18n.js"></script>
   <script src="js/app.js"></script>
 </body>
