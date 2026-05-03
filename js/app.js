@@ -1,7 +1,8 @@
 const state = {
-  currentLang: "en",
-  screen:      "welcome",
-  selectedInn: null,
+  currentLang:    "en",
+  screen:         "welcome",
+  selectedInn:    null,
+  selectedCoupon: null,
 };
 
 function setLanguage(lang) {
@@ -21,18 +22,24 @@ function selectInn(id) {
 }
 
 function selectCoupon(id) {
-  // 次画面（属性入力）へ：未実装
-}
-
-function goBack() {
-  if (state.screen === "inn")        state.screen = "welcome";
-  else if (state.screen === "experience") state.screen = "inn";
+  state.selectedCoupon = id;
+  state.screen = "ticket";
   render();
 }
 
-// 全画面をhideしてから対象のみ表示
+function useTicket() {
+  alert("Used");
+}
+
+function goBack() {
+  if (state.screen === "inn")         state.screen = "welcome";
+  else if (state.screen === "experience") state.screen = "inn";
+  else if (state.screen === "ticket")     state.screen = "experience";
+  render();
+}
+
 function showScreen(id) {
-  ["screen-welcome", "screen-inn", "screen-experience"].forEach(s => {
+  ["screen-welcome", "screen-inn", "screen-experience", "screen-ticket"].forEach(s => {
     document.getElementById(s).style.display = "none";
   });
   document.getElementById(id).style.display = "flex";
@@ -42,8 +49,8 @@ function render() {
   const t = translations[state.currentLang];
 
   // 言語ボタン
-  document.getElementById("btn-ja").style.opacity = state.currentLang === "ja" ? "1"    : "0.4";
-  document.getElementById("btn-en").style.opacity = state.currentLang === "en" ? "1"    : "0.4";
+  document.getElementById("btn-ja").style.opacity = state.currentLang === "ja" ? "1"       : "0.4";
+  document.getElementById("btn-en").style.opacity = state.currentLang === "en" ? "1"       : "0.4";
   document.getElementById("btn-ja").style.color   = state.currentLang === "ja" ? "#dc2626" : "rgba(0,0,0,0.5)";
   document.getElementById("btn-en").style.color   = state.currentLang === "en" ? "#dc2626" : "rgba(0,0,0,0.5)";
 
@@ -98,6 +105,23 @@ function render() {
         </button>
       `).join("");
     }
+  }
+
+  if (state.screen === "ticket") {
+    showScreen("screen-ticket");
+    const cp = coupons.find(c => c.id === state.selectedCoupon);
+
+    document.getElementById("ticket-back").textContent  = t.back;
+    document.getElementById("ticket-title").textContent = state.currentLang === "en" ? cp.title_en : cp.title_ja;
+    document.getElementById("ticket-desc").textContent  = state.currentLang === "en" ? cp.desc_en  : cp.desc_ja;
+    document.getElementById("ticket-cta").textContent   = t.ticket_cta;
+
+    const phrases = [t.phrase_thank, t.phrase_please, t.phrase_ok, t.phrase_photo];
+    document.getElementById("phrase-list").innerHTML = phrases.map(p => `
+      <button class="bg-white/15 backdrop-blur-sm border border-white/30 text-white text-sm py-3 px-4 rounded-2xl text-center">
+        ${p}
+      </button>
+    `).join("");
   }
 }
 
