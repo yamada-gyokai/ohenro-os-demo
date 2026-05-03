@@ -219,10 +219,54 @@
         <h2 id="done-title" class="text-white text-3xl font-semibold tracking-wider"></h2>
         <p  id="done-msg"   class="text-white/60 text-base tracking-wide"></p>
         <button
+          id="done-results"
+          onclick="goToDashboard()"
+          class="w-64 bg-white/20 backdrop-blur-sm border border-white/40 text-white text-base tracking-widest py-3 rounded-full hover:bg-white/30 transition-colors"
+        ></button>
+        <button
           id="done-home"
           onclick="resetToWelcome()"
-          class="mt-4 border border-white/40 text-white/70 text-sm tracking-widest px-8 py-3 rounded-full hover:text-white hover:border-white transition-colors"
+          class="border border-white/30 text-white/50 text-sm tracking-widest px-8 py-3 rounded-full hover:text-white/80 transition-colors"
         ></button>
+      </div>
+    </div>
+
+    <!-- ── ダッシュボード画面 ── -->
+    <div
+      id="screen-dashboard"
+      class="absolute inset-0 flex-col overflow-y-auto px-6 pt-16 pb-10"
+      style="display: none;"
+    >
+      <div class="relative z-10 flex flex-col gap-8 max-w-sm mx-auto w-full">
+
+        <!-- 戻るボタン -->
+        <button
+          id="dash-back"
+          onclick="goBack()"
+          class="self-start text-white/70 text-sm tracking-widest hover:text-white transition-colors"
+        ></button>
+
+        <!-- タイトル -->
+        <h2 id="dash-title" class="text-white text-2xl font-semibold tracking-wider"></h2>
+
+        <!-- 宿ランキング -->
+        <div class="flex flex-col gap-3">
+          <p id="dash-inns-label" class="text-white/60 text-xs tracking-widest uppercase"></p>
+          <div id="dash-inns" class="flex flex-col gap-3"></div>
+        </div>
+
+        <!-- 体験ランキング -->
+        <div class="flex flex-col gap-3">
+          <p id="dash-exp-label" class="text-white/60 text-xs tracking-widest uppercase"></p>
+          <div id="dash-exp" class="flex flex-col gap-3"></div>
+        </div>
+
+        <!-- 国別 -->
+        <div class="flex flex-col gap-3">
+          <p id="dash-countries-label" class="text-white/60 text-xs tracking-widest uppercase"></p>
+          <div id="dash-countries" class="flex flex-col gap-3"></div>
+        </div>
+
       </div>
     </div>
 

@@ -20,6 +20,24 @@ const countryOptions = {
   "Others":        ["Other"],
 };
 
+const demoData = {
+  inns: [
+    { name: "Kuma Kogen Hotel",    count: 12 },
+    { name: "Henro Inn Yamabiko",  count: 8  },
+    { name: "Minshuku Iwaya",      count: 3  },
+  ],
+  experiences: [
+    { name: "Tea & Talk",          count: 10 },
+    { name: "Farm Experience",     count: 6  },
+    { name: "Handmade Market",     count: 4  },
+  ],
+  countries: [
+    { name: "Taiwan",              count: 9  },
+    { name: "USA",                 count: 7  },
+    { name: "Japan",               count: 5  },
+  ],
+};
+
 // ── ナビゲーション ──────────────────────────────────────
 
 function setLanguage(lang) {
@@ -52,10 +70,16 @@ function useTicket() {
 }
 
 function goBack() {
-  if      (state.screen === "inn")        state.screen = "welcome";
-  else if (state.screen === "experience") state.screen = "inn";
-  else if (state.screen === "ticket")     state.screen = "experience";
-  else if (state.screen === "form")       state.screen = "ticket";
+  if      (state.screen === "inn")         state.screen = "welcome";
+  else if (state.screen === "experience")  state.screen = "inn";
+  else if (state.screen === "ticket")      state.screen = "experience";
+  else if (state.screen === "form")        state.screen = "ticket";
+  else if (state.screen === "dashboard")   state.screen = "done";
+  render();
+}
+
+function goToDashboard() {
+  state.screen = "dashboard";
   render();
 }
 
@@ -125,7 +149,7 @@ function submitForm() {
 
 function showScreen(id) {
   ["screen-welcome", "screen-inn", "screen-experience",
-   "screen-ticket",  "screen-form", "screen-done"].forEach(s => {
+   "screen-ticket",  "screen-form", "screen-done", "screen-dashboard"].forEach(s => {
     document.getElementById(s).style.display = "none";
   });
   document.getElementById(id).style.display = "flex";
@@ -271,10 +295,43 @@ function render() {
 
   if (state.screen === "done") {
     showScreen("screen-done");
-    document.getElementById("done-title").textContent = t.done_title;
-    document.getElementById("done-msg").textContent   = t.done_msg;
-    document.getElementById("done-home").textContent  = t.done_home;
+    document.getElementById("done-title").textContent   = t.done_title;
+    document.getElementById("done-msg").textContent     = t.done_msg;
+    document.getElementById("done-results").textContent = t.done_results;
+    document.getElementById("done-home").textContent    = t.done_home;
   }
+
+  if (state.screen === "dashboard") {
+    showScreen("screen-dashboard");
+    document.getElementById("dash-title").textContent = t.dash_title;
+    document.getElementById("dash-back").textContent  = t.back;
+
+    document.getElementById("dash-inns-label").textContent     = t.dash_inns;
+    document.getElementById("dash-exp-label").textContent      = t.dash_exp;
+    document.getElementById("dash-countries-label").textContent = t.dash_countries;
+
+    document.getElementById("dash-inns").innerHTML     = renderBars(demoData.inns);
+    document.getElementById("dash-exp").innerHTML      = renderBars(demoData.experiences);
+    document.getElementById("dash-countries").innerHTML = renderBars(demoData.countries);
+  }
+}
+
+function renderBars(data) {
+  const max = Math.max(...data.map(d => d.count));
+  return data.map(d => {
+    const pct = Math.round((d.count / max) * 100);
+    return `
+      <div class="flex flex-col gap-1">
+        <div class="flex justify-between text-white/80 text-xs">
+          <span>${d.name}</span>
+          <span>${d.count}</span>
+        </div>
+        <div class="h-2.5 bg-white/15 rounded-full overflow-hidden">
+          <div class="h-full bg-white/70 rounded-full" style="width: ${pct}%"></div>
+        </div>
+      </div>
+    `;
+  }).join("");
 }
 
 render();
