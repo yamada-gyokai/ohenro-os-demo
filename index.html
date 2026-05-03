@@ -157,6 +157,75 @@
       </div>
     </div>
 
+    <!-- ── 属性入力画面 ── -->
+    <div
+      id="screen-form"
+      class="absolute inset-0 flex-col overflow-y-auto px-6 pt-16 pb-10"
+      style="display: none;"
+    >
+      <div class="relative z-10 flex flex-col gap-6 max-w-sm mx-auto w-full">
+
+        <!-- 戻るボタン -->
+        <button
+          id="form-back"
+          onclick="goBack()"
+          class="self-start text-white/70 text-sm tracking-widest hover:text-white transition-colors"
+        ></button>
+
+        <!-- タイトル -->
+        <h2 id="form-title" class="text-white text-2xl font-semibold tracking-wider"></h2>
+
+        <!-- Region -->
+        <div class="flex flex-col gap-3">
+          <p class="text-white/60 text-xs tracking-widest uppercase">Region</p>
+          <div id="region-group" class="grid grid-cols-2 gap-3"></div>
+        </div>
+
+        <!-- Country（JSで表示制御） -->
+        <div id="country-section" class="flex flex-col gap-3" style="display: none;">
+          <p class="text-white/60 text-xs tracking-widest uppercase">Country</p>
+          <div id="country-group" class="grid grid-cols-2 gap-3"></div>
+        </div>
+
+        <!-- Age -->
+        <div class="flex flex-col gap-3">
+          <p class="text-white/60 text-xs tracking-widest uppercase">Age</p>
+          <div id="age-group" class="grid grid-cols-5 gap-2"></div>
+        </div>
+
+        <!-- Gender -->
+        <div class="flex flex-col gap-3">
+          <p class="text-white/60 text-xs tracking-widest uppercase">Gender</p>
+          <div id="gender-group" class="grid grid-cols-2 gap-3"></div>
+        </div>
+
+        <!-- Submit CTA -->
+        <button
+          id="form-cta"
+          onclick="submitForm()"
+          class="w-full bg-red-600 hover:bg-red-700 active:bg-red-800 text-white text-lg font-semibold tracking-widest py-5 rounded-full shadow-2xl transition-colors duration-150 mt-2"
+        ></button>
+
+      </div>
+    </div>
+
+    <!-- ── 完了画面 ── -->
+    <div
+      id="screen-done"
+      class="absolute inset-0 flex-col items-center justify-center px-6 text-center gap-6"
+      style="display: none;"
+    >
+      <div class="relative z-10 flex flex-col items-center gap-5">
+        <h2 id="done-title" class="text-white text-3xl font-semibold tracking-wider"></h2>
+        <p  id="done-msg"   class="text-white/60 text-base tracking-wide"></p>
+        <button
+          id="done-home"
+          onclick="resetToWelcome()"
+          class="mt-4 border border-white/40 text-white/70 text-sm tracking-widest px-8 py-3 rounded-full hover:text-white hover:border-white transition-colors"
+        ></button>
+      </div>
+    </div>
+
   </section>
 
   <script src="config/config.js"></script>

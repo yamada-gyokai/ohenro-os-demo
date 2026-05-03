@@ -4,7 +4,23 @@ const state = {
   selectedInn:    null,
   selectedCoupon: null,
   usedCoupons:    [],
+  form: {
+    region:       "",
+    country:      "",
+    countryInput: "",
+    age:          "",
+    gender:       "",
+  },
 };
+
+const countryOptions = {
+  "Asia":          ["Japan", "Taiwan", "Korea", "China", "Other"],
+  "Europe":        ["UK", "France", "Germany", "Italy", "Other"],
+  "North America": ["USA", "Canada", "Mexico", "Other"],
+  "Others":        ["Other"],
+};
+
+// ── ナビゲーション ──────────────────────────────────────
 
 function setLanguage(lang) {
   state.currentLang = lang;
@@ -31,22 +47,92 @@ function selectCoupon(id) {
 function useTicket() {
   state.usedCoupons.push(state.selectedCoupon);
   console.log("USED:", state.selectedCoupon);
-  alert("Used");
-}
-
-function goBack() {
-  if (state.screen === "inn")         state.screen = "welcome";
-  else if (state.screen === "experience") state.screen = "inn";
-  else if (state.screen === "ticket")     state.screen = "experience";
+  state.screen = "form";
   render();
 }
 
+function goBack() {
+  if      (state.screen === "inn")        state.screen = "welcome";
+  else if (state.screen === "experience") state.screen = "inn";
+  else if (state.screen === "ticket")     state.screen = "experience";
+  else if (state.screen === "form")       state.screen = "ticket";
+  render();
+}
+
+function resetToWelcome() {
+  state.screen         = "welcome";
+  state.selectedInn    = null;
+  state.selectedCoupon = null;
+  state.form = { region: "", country: "", countryInput: "", age: "", gender: "" };
+  render();
+}
+
+// ── フォーム入力 ────────────────────────────────────────
+
+function selectRegion(val) {
+  state.form.region       = val;
+  state.form.country      = "";
+  state.form.countryInput = "";
+  render();
+}
+
+function selectCountry(val) {
+  state.form.country      = val;
+  state.form.countryInput = "";
+  render();
+}
+
+function setCustomCountry(val) {
+  // render()を呼ばない → 入力中のフォーカスを維持するため
+  state.form.countryInput = val;
+}
+
+function selectAge(val) {
+  state.form.age = val;
+  render();
+}
+
+function selectGender(val) {
+  state.form.gender = val;
+  render();
+}
+
+function submitForm() {
+  const country = state.form.country === "Other"
+    ? (state.form.countryInput || "Other")
+    : state.form.country;
+
+  console.log({
+    coupon:  state.selectedCoupon,
+    region:  state.form.region,
+    country: country,
+    age:     state.form.age,
+    gender:  state.form.gender,
+  });
+
+  state.screen = "done";
+  render();
+}
+
+// ── 画面切替 ────────────────────────────────────────────
+
 function showScreen(id) {
-  ["screen-welcome", "screen-inn", "screen-experience", "screen-ticket"].forEach(s => {
+  ["screen-welcome", "screen-inn", "screen-experience",
+   "screen-ticket",  "screen-form", "screen-done"].forEach(s => {
     document.getElementById(s).style.display = "none";
   });
   document.getElementById(id).style.display = "flex";
 }
+
+// ── ボタンクラスヘルパー ────────────────────────────────
+
+function btnClass(active) {
+  return active
+    ? "bg-red-600 border border-red-600 text-white text-sm py-3 px-3 rounded-xl text-center transition-colors"
+    : "bg-white/15 backdrop-blur-sm border border-white/30 text-white text-sm py-3 px-3 rounded-xl text-center transition-colors";
+}
+
+// ── メインrender ────────────────────────────────────────
 
 function render() {
   const t = translations[state.currentLang];
@@ -125,6 +211,62 @@ function render() {
         ${p}
       </button>
     `).join("");
+  }
+
+  if (state.screen === "form") {
+    showScreen("screen-form");
+    const f = state.form;
+
+    document.getElementById("form-title").textContent = t.form_title;
+    document.getElementById("form-cta").textContent   = t.form_cta;
+    document.getElementById("form-back").textContent  = t.back;
+
+    // Region
+    const regions = ["Asia", "Europe", "North America", "Others"];
+    document.getElementById("region-group").innerHTML = regions.map(r => `
+      <button onclick="selectRegion('${r}')" class="${btnClass(f.region === r)}">${r}</button>
+    `).join("");
+
+    // Country（regionが選択されたら表示）
+    const countrySec = document.getElementById("country-section");
+    if (!f.region) {
+      countrySec.style.display = "none";
+    } else {
+      countrySec.style.display = "block";
+      const options = countryOptions[f.region];
+      const btns = options.map(c => `
+        <button onclick="selectCountry('${c}')" class="${btnClass(f.country === c)}">${c}</button>
+      `).join("");
+      const input = f.country === "Other" ? `
+        <input
+          type="text"
+          placeholder="Enter your country"
+          value="${f.countryInput}"
+          oninput="setCustomCountry(this.value)"
+          class="col-span-2 bg-white/15 backdrop-blur-sm border border-white/30 text-white placeholder-white/40 text-sm py-3 px-4 rounded-xl mt-1"
+        />
+      ` : "";
+      document.getElementById("country-group").innerHTML = btns + input;
+    }
+
+    // Age
+    const ages = ["10s", "20s", "30s", "40s", "50+"];
+    document.getElementById("age-group").innerHTML = ages.map(a => `
+      <button onclick="selectAge('${a}')" class="${btnClass(f.age === a)}">${a}</button>
+    `).join("");
+
+    // Gender
+    const genders = ["Male", "Female", "Other", "Prefer not to say"];
+    document.getElementById("gender-group").innerHTML = genders.map(g => `
+      <button onclick="selectGender('${g}')" class="${btnClass(f.gender === g)}">${g}</button>
+    `).join("");
+  }
+
+  if (state.screen === "done") {
+    showScreen("screen-done");
+    document.getElementById("done-title").textContent = t.done_title;
+    document.getElementById("done-msg").textContent   = t.done_msg;
+    document.getElementById("done-home").textContent  = t.done_home;
   }
 }
 
