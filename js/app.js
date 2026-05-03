@@ -79,19 +79,25 @@ function render() {
     document.getElementById("exp-back").textContent  = t.back;
 
     const filtered = coupons.filter(c => c.inn_id === state.selectedInn);
-    document.getElementById("exp-list").innerHTML = filtered.map(cp => `
-      <button
-        onclick="selectCoupon('${cp.id}')"
-        class="w-full bg-white/95 rounded-2xl px-6 py-5 text-left shadow-lg active:bg-white/80 transition-colors"
-      >
-        <p class="text-gray-800 text-base font-semibold tracking-wide">
-          ${state.currentLang === "en" ? cp.title_en : cp.title_ja}
-        </p>
-        <p class="text-gray-500 text-sm mt-1">
-          ${state.currentLang === "en" ? cp.desc_en : cp.desc_ja}
-        </p>
-      </button>
-    `).join("");
+
+    if (filtered.length === 0) {
+      document.getElementById("exp-list").innerHTML =
+        `<p class="text-white/50 text-base text-center tracking-wide pt-8">${t.exp_empty}</p>`;
+    } else {
+      document.getElementById("exp-list").innerHTML = filtered.map(cp => `
+        <button
+          onclick="selectCoupon('${cp.id}')"
+          class="w-full bg-white/95 rounded-2xl px-6 py-5 text-left shadow-lg active:bg-white/80 transition-colors"
+        >
+          <p class="text-gray-800 text-base font-semibold tracking-wide">
+            ${state.currentLang === "en" ? cp.title_en : cp.title_ja}
+          </p>
+          <p class="text-gray-500 text-sm mt-1">
+            ${state.currentLang === "en" ? cp.desc_en : cp.desc_ja}
+          </p>
+        </button>
+      `).join("");
+    }
   }
 }
 

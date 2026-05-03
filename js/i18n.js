@@ -7,6 +7,7 @@ const translations = {
     cta:       "Choose your stay",
     inn_title: "Choose your stay",
     exp_title: "Local experiences",
+    exp_empty: "No experiences available nearby.",
     back:      "← Back",
   },
   ja: {
@@ -17,6 +18,7 @@ const translations = {
     cta:       "宿を選ぶ",
     inn_title: "宿を選ぶ",
     exp_title: "地元体験",
+    exp_empty: "近くに体験がありません",
     back:      "← 戻る",
   },
 };
