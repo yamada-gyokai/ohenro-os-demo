@@ -3,6 +3,7 @@ const state = {
   screen:         "welcome",
   selectedInn:    null,
   selectedCoupon: null,
+  usedCoupons:    [],
 };
 
 function setLanguage(lang) {
@@ -28,6 +29,8 @@ function selectCoupon(id) {
 }
 
 function useTicket() {
+  state.usedCoupons.push(state.selectedCoupon);
+  console.log("USED:", state.selectedCoupon);
   alert("Used");
 }
 
