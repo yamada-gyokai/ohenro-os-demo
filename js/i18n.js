@@ -6,6 +6,7 @@ const translations = {
     catch:     "Choose your stay tonight.",
     cta:       "Choose your stay",
     inn_title: "Choose your stay",
+    exp_title: "Local experiences",
     back:      "← Back",
   },
   ja: {
@@ -15,6 +16,7 @@ const translations = {
     catch:     "今夜の宿を、選ぼう。",
     cta:       "宿を選ぶ",
     inn_title: "宿を選ぶ",
+    exp_title: "地元体験",
     back:      "← 戻る",
   },
 };
