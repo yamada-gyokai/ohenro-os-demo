@@ -102,13 +102,20 @@ function submitForm() {
     ? (state.form.countryInput || "Other")
     : state.form.country;
 
-  console.log({
-    coupon:  state.selectedCoupon,
-    region:  state.form.region,
-    country: country,
-    age:     state.form.age,
-    gender:  state.form.gender,
-  });
+  const log = {
+    coupon:    state.selectedCoupon,
+    region:    state.form.region,
+    country:   country,
+    age:       state.form.age,
+    gender:    state.form.gender,
+    timestamp: new Date().toISOString(),
+  };
+
+  const logs = JSON.parse(localStorage.getItem("logs") || "[]");
+  logs.push(log);
+  localStorage.setItem("logs", JSON.stringify(logs));
+
+  console.log("SAVED:", log);
 
   state.screen = "done";
   render();
