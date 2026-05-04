@@ -83,6 +83,10 @@ function selectInn(id) {
 
 function selectCoupon(id) {
   state.selectedCoupon = id;
+  sendLog({ session_id: state.session_id, event: "coupon_display",       timestamp: new Date().toISOString(), inn: state.selectedInn, coupon: id });
+  sendLog({ session_id: state.session_id, event: "navigate_experience",  timestamp: new Date().toISOString(), inn: state.selectedInn, coupon: id });
+  saveLog({ event: "coupon_display",      inn: state.selectedInn, coupon: id });
+  saveLog({ event: "navigate_experience", inn: state.selectedInn, coupon: id });
   state.screen = "ticket";
   render();
 }
@@ -90,6 +94,8 @@ function selectCoupon(id) {
 function useTicket() {
   state.usedCoupons.push(state.selectedCoupon);
   console.log("USED:", state.selectedCoupon);
+  sendLog({ session_id: state.session_id, event: "coupon_use", timestamp: new Date().toISOString(), inn: state.selectedInn, coupon: state.selectedCoupon });
+  saveLog({ event: "coupon_use", inn: state.selectedInn, coupon: state.selectedCoupon });
   state.screen = "form";
   render();
 }
