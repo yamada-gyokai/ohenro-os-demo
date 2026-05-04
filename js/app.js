@@ -393,6 +393,31 @@ function render() {
       </div>
       <p class="text-white/40 text-xs text-center tracking-widest">${isJA ? "どんな人が来ているか" : "Who is visiting"}</p>
     `;
+
+    // ④ ルートランキング
+    const logs   = JSON.parse(localStorage.getItem("logs") || "[]");
+    const routes = buildRouteRanking(buildPaths(logs));
+    const routeMax = routes[0]?.count || 1;
+
+    document.getElementById("dash-routes").innerHTML =
+      (routes.length === 0
+        ? `<p class="text-white/40 text-xs text-center py-2">${isJA ? "データなし" : "No data"}</p>`
+        : routes.map((r, i) => `
+            <div class="flex flex-col gap-1.5">
+              <div class="flex items-center justify-between gap-2">
+                <div class="flex items-center gap-2">
+                  <span class="text-white/30 text-xs w-3">${i + 1}</span>
+                  <span class="text-white/80 text-xs">${r.path}</span>
+                </div>
+                <span class="text-white text-sm font-semibold">${r.count}</span>
+              </div>
+              <div class="h-2 bg-white/10 rounded-full overflow-hidden">
+                <div class="h-full bg-white/50 rounded-full" style="width:${Math.round(r.count / routeMax * 100)}%"></div>
+              </div>
+            </div>
+          `).join("")
+      )
+      + `<p class="text-white/40 text-xs text-center tracking-widest border-t border-white/10 pt-3 mt-1">${isJA ? "どの流れで人が動いているか" : "How people are moving"}</p>`;
   }
 }
 
