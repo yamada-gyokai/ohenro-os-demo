@@ -43,7 +43,7 @@ const demoData = {
   ],
 };
 
-// ── ログ送信 ────────────────────────────────────────────
+// ── ログ送信（GAS） ─────────────────────────────────────
 function sendLog(payload) {
   fetch(CONFIG.GAS_URL, {
     method:  "POST",
@@ -51,6 +51,14 @@ function sendLog(payload) {
     headers: { "Content-Type": "text/plain" },
     body:    JSON.stringify(payload),
   }).catch(() => {});
+}
+
+// ── ログ保存（localStorage） ─────────────────────────────
+function saveLog(payload) {
+  const entry = { ...payload, session_id: state.session_id, timestamp: new Date().toISOString() };
+  const logs = JSON.parse(localStorage.getItem("logs") || "[]");
+  logs.push(entry);
+  localStorage.setItem("logs", JSON.stringify(logs));
 }
 
 // ── ナビゲーション ──────────────────────────────────────
@@ -68,6 +76,7 @@ function goToInn() {
 function selectInn(id) {
   state.selectedInn = id;
   sendLog({ session_id: state.session_id, event: "inn_select", timestamp: new Date().toISOString(), spot: "45", inn: id, location_type: "inn" });
+  saveLog({ event: "inn_select", inn: id, spot: "45" });
   state.screen = "experience";
   render();
 }
@@ -319,17 +328,107 @@ function render() {
 
   if (state.screen === "dashboard") {
     showScreen("screen-dashboard");
-    document.getElementById("dash-title").textContent = t.dash_title;
-    document.getElementById("dash-back").textContent  = t.back;
+    document.getElementById("dash-back").textContent = t.back;
 
-    document.getElementById("dash-inns-label").textContent     = t.dash_inns;
-    document.getElementById("dash-exp-label").textContent      = t.dash_exp;
-    document.getElementById("dash-countries-label").textContent = t.dash_countries;
+    const d   = collectDashData();
+    const isJA = state.currentLang === "ja";
 
-    document.getElementById("dash-inns").innerHTML     = renderBars(demoData.inns);
-    document.getElementById("dash-exp").innerHTML      = renderBars(demoData.experiences);
-    document.getElementById("dash-countries").innerHTML = renderBars(demoData.countries);
+    // ① 人の流れ
+    document.getElementById("dash-flow").innerHTML = `
+      <div class="flex items-center justify-center gap-6 mb-3">
+        <div class="flex flex-col items-center gap-0.5">
+          <span class="text-white/50 text-xs">${isJA ? "45番" : "Temple 45"}</span>
+          <span class="text-white text-4xl font-semibold">${d.spotVisits}</span>
+          <span class="text-white/50 text-xs">${isJA ? "人" : "visitors"}</span>
+        </div>
+        <span class="text-white/30 text-2xl">→</span>
+        <div class="flex flex-col items-center gap-0.5">
+          <span class="text-white/50 text-xs">${isJA ? "宿選択" : "Inn select"}</span>
+          <span class="text-white text-4xl font-semibold">${d.innSelects}</span>
+          <span class="text-white/50 text-xs">${isJA ? "人" : "people"}</span>
+        </div>
+      </div>
+      <p class="text-white/40 text-xs text-center tracking-widest">${isJA ? "人はここまで来ている" : "People are making it here"}</p>
+    `;
+
+    // ② 宿ランキング
+    const max = d.innRanking[0]?.count || 1;
+    document.getElementById("dash-inns-ranking").innerHTML =
+      d.innRanking.map((inn, i) => `
+        <div class="flex items-center gap-3">
+          <span class="text-white/30 text-xs w-3">${i + 1}</span>
+          <div class="flex-1 flex flex-col gap-1">
+            <div class="flex justify-between text-white/80 text-xs">
+              <span>${inn.name}</span><span>${inn.count}</span>
+            </div>
+            <div class="h-2 bg-white/10 rounded-full overflow-hidden">
+              <div class="h-full bg-white/60 rounded-full" style="width:${Math.round(inn.count / max * 100)}%"></div>
+            </div>
+          </div>
+        </div>
+      `).join("")
+      + `<p class="text-white/40 text-xs text-center tracking-widest mt-1">${isJA ? "この宿に人が流れている" : "These inns are attracting visitors"}</p>`;
+
+    // ③ 属性
+    const total = (d.japan + d.abroad) || 1;
+    document.getElementById("dash-attr").innerHTML = `
+      <div class="flex justify-center gap-8 mb-3">
+        <div class="flex flex-col items-center gap-0.5">
+          <span class="text-white/50 text-xs">${isJA ? "日本" : "Japan"}</span>
+          <span class="text-white text-4xl font-semibold">${d.japan}</span>
+        </div>
+        <div class="flex flex-col items-center gap-0.5">
+          <span class="text-white/50 text-xs">${isJA ? "海外" : "International"}</span>
+          <span class="text-white text-4xl font-semibold">${d.abroad}</span>
+        </div>
+      </div>
+      <div class="h-2 bg-white/10 rounded-full overflow-hidden mb-3">
+        <div class="h-full bg-white/60 rounded-full" style="width:${Math.round(d.japan / total * 100)}%"></div>
+      </div>
+      <p class="text-white/40 text-xs text-center tracking-widest">${isJA ? "どんな人が来ているか" : "Who is visiting"}</p>
+    `;
   }
+}
+
+// ── ダッシュボードデータ集計 ─────────────────────────────
+function collectDashData() {
+  const raw = JSON.parse(localStorage.getItem("logs") || "[]");
+
+  // ログなし → PoC用ダミー
+  if (raw.length === 0) {
+    return {
+      spotVisits: 18,
+      innSelects: 12,
+      innRanking: [
+        { name: state.currentLang === "ja" ? "久万高原ホテル" : "Kuma Kogen Hotel",   count: 6 },
+        { name: state.currentLang === "ja" ? "遍路宿やまびこ"  : "Henro Inn Yamabiko", count: 4 },
+        { name: state.currentLang === "ja" ? "民宿いわや"      : "Minshuku Iwaya",     count: 2 },
+      ],
+      japan: 5, abroad: 7,
+    };
+  }
+
+  const innSelectLogs = raw.filter(l => l.event === "inn_select");
+  const sessions      = new Set(raw.map(l => l.session_id).filter(Boolean)).size;
+
+  // 宿ランキング
+  const counts = {};
+  innSelectLogs.forEach(l => {
+    const found = inns.find(i => i.id === l.inn);
+    const name  = found ? (state.currentLang === "ja" ? found.name_ja : found.name_en) : l.inn;
+    counts[name] = (counts[name] || 0) + 1;
+  });
+  const innRanking = Object.entries(counts)
+    .map(([name, count]) => ({ name, count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 3);
+
+  // 属性（form logsはcountryフィールドを持つ）
+  const formLogs = raw.filter(l => l.country);
+  const japan    = formLogs.filter(l => l.country === "Japan").length;
+  const abroad   = formLogs.filter(l => l.country !== "Japan").length;
+
+  return { spotVisits: Math.max(sessions, innSelectLogs.length), innSelects: innSelectLogs.length, innRanking, japan, abroad };
 }
 
 function renderBars(data) {
