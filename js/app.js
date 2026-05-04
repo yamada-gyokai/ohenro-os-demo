@@ -1,6 +1,11 @@
 const state = {
   currentLang:    "en",
   screen:         "welcome",
+  session_id:     (localStorage.getItem("session_id") || (() => {
+                    const id = "s_" + Date.now() + "_" + Math.random().toString(36).slice(2, 7);
+                    localStorage.setItem("session_id", id);
+                    return id;
+                  })()),
   selectedInn:    null,
   selectedCoupon: null,
   usedCoupons:    [],
@@ -38,6 +43,16 @@ const demoData = {
   ],
 };
 
+// ── ログ送信 ────────────────────────────────────────────
+function sendLog(payload) {
+  fetch(CONFIG.GAS_URL, {
+    method:  "POST",
+    mode:    "no-cors",
+    headers: { "Content-Type": "text/plain" },
+    body:    JSON.stringify(payload),
+  }).catch(() => {});
+}
+
 // ── ナビゲーション ──────────────────────────────────────
 
 function setLanguage(lang) {
@@ -52,6 +67,7 @@ function goToInn() {
 
 function selectInn(id) {
   state.selectedInn = id;
+  sendLog({ session_id: state.session_id, event: "inn_select", timestamp: new Date().toISOString(), spot: "45", inn: id, location_type: "inn" });
   state.screen = "experience";
   render();
 }

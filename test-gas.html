@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GAS Test</title>
+  <style>
+    body      { font-family: monospace; padding: 40px; max-width: 640px; background: #fafafa; }
+    h2        { margin-bottom: 24px; }
+    button    { padding: 12px 28px; font-size: 15px; cursor: pointer; background: #222; color: #fff; border: none; border-radius: 6px; }
+    button:active { opacity: 0.7; }
+    #result   { margin-top: 24px; padding: 16px; border-radius: 6px; white-space: pre-wrap; font-size: 13px; line-height: 1.6; background: #eee; color: #333; }
+    #result.ok  { background: #d4edda; color: #155724; }
+    #result.err { background: #f8d7da; color: #721c24; }
+    #result.warn{ background: #fff3cd; color: #856404; }
+  </style>
+</head>
+<body>
+
+  <h2>GAS Test</h2>
+  <button onclick="sendTestData()">Send Test Data</button>
+  <div id="result">--- まだ送信していません ---</div>
+
+  <script>
+    // ── 送信先URL ────────────────────────────────────────
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbxiD8nzs7KR5nVV7sopeFNttAx2AJGQzE-nhY5IdBWuSg-GIrBpcNeQ8Krp-b2SVMCK/exec";
+
+    // ── 送信データ ────────────────────────────────────────
+    function buildPayload() {
+      return {
+        session_id:    "test001",
+        event:         "test",
+        timestamp:     new Date().toISOString(),
+        spot:          "44",
+        inn:           "test_inn",
+        coupon:        "test_coupon",
+        store:         "test_store",
+        region:        "asia",
+        country:       "JP",
+        age:           "30",
+        gender:        "M",
+        lat:           "33.0",
+        lng:           "132.0",
+        accuracy:      "10",
+        location_type: "gps",
+      };
+    }
+
+    // ── 結果表示 ──────────────────────────────────────────
+    function showResult(cls, text) {
+      const el = document.getElementById("result");
+      el.className = cls;
+      el.textContent = text;
+    }
+
+    // ── メイン送信関数 ────────────────────────────────────
+    async function sendTestData() {
+      const data = buildPayload();
+      showResult("", "Sending...");
+      console.log("[GAS Test] Sending:", data);
+
+      // ① 通常fetchでCORS対応レスポンスを試みる
+      try {
+        const res = await fetch(GAS_URL, {
+          method:  "POST",
+          headers: { "Content-Type": "application/json" },
+          body:    JSON.stringify(data),
+        });
+
+        const text = await res.text();
+        console.log("[GAS Test] Response (cors):", text);
+
+        showResult("ok",
+          "✓ 送信成功（CORSレスポンス取得）\n\n"
+          + "Status : " + res.status + "\n"
+          + "Body   : " + text + "\n\n"
+          + "Sent:\n" + JSON.stringify(data, null, 2)
+        );
+
+      } catch (corsErr) {
+        // CORSエラーの場合 → no-cors + text/plain で再送
+        console.warn("[GAS Test] CORS blocked, retrying with no-cors:", corsErr.message);
+
+        try {
+          await fetch(GAS_URL, {
+            method:  "POST",
+            mode:    "no-cors",          // preflightなし
+            headers: { "Content-Type": "text/plain" },  // シンプルリクエスト
+            body:    JSON.stringify(data),
+          });
+
+          console.log("[GAS Test] Sent (no-cors) — response is opaque");
+          showResult("warn",
+            "⚠ 送信完了（no-corsモード）\n\n"
+            + "リクエストは送信されましたが、GASのCORSヘッダーがないため\n"
+            + "レスポンスは読めません。スプレッドシートで確認してください。\n\n"
+            + "Sent:\n" + JSON.stringify(data, null, 2)
+          );
+
+        } catch (e) {
+          console.error("[GAS Test] Error:", e);
+          showResult("err", "✗ 送信失敗\n\n" + e.message);
+        }
+      }
+    }
+  </script>
+
+</body>
+</html>
