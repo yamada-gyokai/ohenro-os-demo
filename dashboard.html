@@ -92,6 +92,9 @@
       // セッション数
       const sessions = new Set(raw.map(l => l.session_id).filter(Boolean)).size;
 
+      // 札所番号（ログ内のspotを優先、なければ"45"）
+      const spot = raw.find(l => l.spot)?.spot || "45";
+
       // inn_select イベント
       const innSelectLogs = raw.filter(l => l.event === "inn_select");
 
@@ -117,7 +120,8 @@
 
       return {
         isDemo:     false,
-        spotVisits: Math.max(sessions, innSelectLogs.length),
+        spotVisits: sessions,
+        spot,
         innSelects: innSelectLogs.length,
         innRanking,
         japan, abroad,
@@ -154,7 +158,7 @@
       document.getElementById("block-flow").innerHTML = `
         <div class="flex flex-col items-center gap-3 py-2">
           <div class="flex flex-col items-center gap-0.5">
-            <span class="text-white/40 text-xs tracking-wide">45番 訪問</span>
+            <span class="text-white/40 text-xs tracking-wide">${d.spot}番 訪問</span>
             <span class="text-white text-5xl font-semibold leading-none">${d.spotVisits}</span>
             <span class="text-white/40 text-xs">人</span>
           </div>
