@@ -421,6 +421,22 @@ function buildPaths(logs) {
   });
 }
 
+// ── ルートランキング生成 ─────────────────────────────────
+function buildRouteRanking(paths) {
+  const counts = {};
+
+  paths.forEach(({ path }) => {
+    if (path.length === 0) return;
+    const key = path.join("→");
+    counts[key] = (counts[key] || 0) + 1;
+  });
+
+  return Object.entries(counts)
+    .map(([path, count]) => ({ path, count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 3);
+}
+
 // ── ダッシュボードデータ集計 ─────────────────────────────
 function collectDashData() {
   const raw = JSON.parse(localStorage.getItem("logs") || "[]");
