@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>お遍路OS — Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;400;600&display=swap" rel="stylesheet" />
+  <style>
+    body { font-family: 'Noto Serif JP', serif; }
+  </style>
+</head>
+<body class="min-h-screen text-white" style="background: linear-gradient(160deg, #12100a 0%, #1e1608 50%, #0e1510 100%);">
+
+  <!-- ── ヘッダー ── -->
+  <header class="px-6 pt-10 pb-4 max-w-3xl mx-auto flex items-end justify-between gap-4">
+    <div>
+      <p class="text-white/40 text-xs tracking-[0.3em] uppercase mb-1">Admin Dashboard</p>
+      <h1 class="text-white text-2xl font-semibold tracking-wider">お遍路OS</h1>
+    </div>
+    <div class="flex items-center gap-3">
+      <p id="updated-at" class="text-white/30 text-xs tracking-wide"></p>
+      <button
+        onclick="refresh()"
+        class="border border-white/20 text-white/50 text-xs tracking-widest px-4 py-2 rounded-full hover:border-white/50 hover:text-white/80 transition-colors"
+      >Refresh</button>
+    </div>
+  </header>
+
+  <!-- ── メインコンテンツ ── -->
+  <main class="px-6 pb-12 max-w-3xl mx-auto flex flex-col gap-4 md:grid md:grid-cols-3 md:items-start">
+
+    <!-- ① 人の流れ -->
+    <div class="bg-white/8 backdrop-blur-sm border border-white/15 rounded-2xl px-5 py-6 flex flex-col gap-4">
+      <p class="text-white/40 text-xs tracking-[0.25em] uppercase">人の流れ</p>
+      <div id="block-flow" class="flex flex-col gap-4"></div>
+    </div>
+
+    <!-- ② 宿ランキング -->
+    <div class="bg-white/8 backdrop-blur-sm border border-white/15 rounded-2xl px-5 py-6 flex flex-col gap-4">
+      <p class="text-white/40 text-xs tracking-[0.25em] uppercase">宿ランキング</p>
+      <div id="block-inns" class="flex flex-col gap-3"></div>
+    </div>
+
+    <!-- ③ 属性 -->
+    <div class="bg-white/8 backdrop-blur-sm border border-white/15 rounded-2xl px-5 py-6 flex flex-col gap-4">
+      <p class="text-white/40 text-xs tracking-[0.25em] uppercase">属性</p>
+      <div id="block-attr" class="flex flex-col gap-3"></div>
+    </div>
+
+  </main>
+
+  <!-- ── フッター ── -->
+  <footer class="px-6 pb-8 max-w-3xl mx-auto flex items-center justify-between">
+    <p id="log-count" class="text-white/20 text-xs tracking-wide"></p>
+    <button
+      onclick="clearLogs()"
+      class="text-white/20 text-xs tracking-wide hover:text-red-400 transition-colors"
+    >Clear logs</button>
+  </footer>
+
+  <script>
+    // ── 宿名マスタ（data.jsと同期） ───────────────────────
+    const INN_MAP = {
+      "inn_01": "久万高原ホテル",
+      "inn_02": "遍路宿やまびこ",
+      "inn_03": "民宿いわや",
+    };
+
+    // ── データ集計 ────────────────────────────────────────
+    function collectDashData() {
+      const raw = JSON.parse(localStorage.getItem("logs") || "[]");
+
+      if (raw.length === 0) {
+        return {
+          isDemo:     true,
+          spotVisits: 18,
+          innSelects: 12,
+          innRanking: [
+            { name: "久万高原ホテル",   count: 6 },
+            { name: "遍路宿やまびこ",  count: 4 },
+            { name: "民宿いわや",      count: 2 },
+          ],
+          japan: 5, abroad: 7,
+          total: 0,
+          lastAt: null,
+        };
+      }
+
+      // セッション数
+      const sessions = new Set(raw.map(l => l.session_id).filter(Boolean)).size;
+
+      // inn_select イベント
+      const innSelectLogs = raw.filter(l => l.event === "inn_select");
+
+      // 宿ランキング集計
+      const counts = {};
+      innSelectLogs.forEach(l => {
+        const name = INN_MAP[l.inn] || l.inn || "不明";
+        counts[name] = (counts[name] || 0) + 1;
+      });
+      const innRanking = Object.entries(counts)
+        .map(([name, count]) => ({ name, count }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 3);
+
+      // 属性（country フィールドを持つ = form 送信ログ）
+      const formLogs = raw.filter(l => l.country);
+      const japan    = formLogs.filter(l => l.country === "Japan").length;
+      const abroad   = formLogs.filter(l => l.country !== "Japan").length;
+
+      // 最終ログ時刻
+      const timestamps = raw.map(l => l.timestamp).filter(Boolean).sort();
+      const lastAt     = timestamps.at(-1) ?? null;
+
+      return {
+        isDemo:     false,
+        spotVisits: Math.max(sessions, innSelectLogs.length),
+        innSelects: innSelectLogs.length,
+        innRanking,
+        japan, abroad,
+        total: raw.length,
+        lastAt,
+      };
+    }
+
+    // ── バー生成ヘルパー ──────────────────────────────────
+    function bar(pct, color = "bg-white/60") {
+      return `
+        <div class="h-2 bg-white/10 rounded-full overflow-hidden">
+          <div class="${color} h-full rounded-full transition-all duration-500" style="width:${pct}%"></div>
+        </div>
+      `;
+    }
+
+    // ── 描画 ─────────────────────────────────────────────
+    function render() {
+      const d = collectDashData();
+
+      // デモ表示バッジ
+      if (d.isDemo) {
+        document.title = "お遍路OS — Dashboard (Demo)";
+      }
+
+      // フッター
+      document.getElementById("log-count").textContent =
+        d.isDemo ? "⚠ ログなし — ダミーデータ表示中" : `ログ ${d.total} 件`;
+      document.getElementById("updated-at").textContent =
+        d.lastAt ? "最終: " + new Date(d.lastAt).toLocaleString("ja-JP", { month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit" }) : "";
+
+      // ① 人の流れ
+      document.getElementById("block-flow").innerHTML = `
+        <div class="flex flex-col items-center gap-3 py-2">
+          <div class="flex flex-col items-center gap-0.5">
+            <span class="text-white/40 text-xs tracking-wide">45番 訪問</span>
+            <span class="text-white text-5xl font-semibold leading-none">${d.spotVisits}</span>
+            <span class="text-white/40 text-xs">人</span>
+          </div>
+          <span class="text-white/20 text-xl">↓</span>
+          <div class="flex flex-col items-center gap-0.5">
+            <span class="text-white/40 text-xs tracking-wide">宿選択</span>
+            <span class="text-white text-5xl font-semibold leading-none">${d.innSelects}</span>
+            <span class="text-white/40 text-xs">人</span>
+          </div>
+        </div>
+        <p class="text-white/30 text-xs text-center tracking-widest border-t border-white/10 pt-3">
+          人はここまで来ている
+        </p>
+      `;
+
+      // ② 宿ランキング
+      if (d.innRanking.length === 0) {
+        document.getElementById("block-inns").innerHTML =
+          `<p class="text-white/30 text-xs text-center py-4">データなし</p>`;
+      } else {
+        const maxCount = d.innRanking[0].count;
+        document.getElementById("block-inns").innerHTML =
+          d.innRanking.map((inn, i) => `
+            <div class="flex flex-col gap-1.5">
+              <div class="flex items-center justify-between gap-2">
+                <div class="flex items-center gap-2">
+                  <span class="text-white/30 text-xs w-3">${i + 1}</span>
+                  <span class="text-white/80 text-sm">${inn.name}</span>
+                </div>
+                <span class="text-white text-base font-semibold">${inn.count}</span>
+              </div>
+              ${bar(Math.round(inn.count / maxCount * 100))}
+            </div>
+          `).join("")
+          + `<p class="text-white/30 text-xs text-center tracking-widest border-t border-white/10 pt-3 mt-1">
+               この宿に人が流れている
+             </p>`;
+      }
+
+      // ③ 属性
+      const total = (d.japan + d.abroad) || 1;
+      const jpPct = Math.round(d.japan  / total * 100);
+      const abPct = Math.round(d.abroad / total * 100);
+      document.getElementById("block-attr").innerHTML = `
+        <div class="flex justify-around py-2">
+          <div class="flex flex-col items-center gap-0.5">
+            <span class="text-white/40 text-xs">日本</span>
+            <span class="text-white text-5xl font-semibold leading-none">${d.japan}</span>
+            <span class="text-white/30 text-xs">${jpPct}%</span>
+          </div>
+          <div class="text-white/10 text-3xl self-center">|</div>
+          <div class="flex flex-col items-center gap-0.5">
+            <span class="text-white/40 text-xs">海外</span>
+            <span class="text-white text-5xl font-semibold leading-none">${d.abroad}</span>
+            <span class="text-white/30 text-xs">${abPct}%</span>
+          </div>
+        </div>
+        <div class="h-2 bg-white/10 rounded-full overflow-hidden flex">
+          <div class="bg-white/60 h-full rounded-l-full transition-all duration-500" style="width:${jpPct}%"></div>
+          <div class="bg-red-400/50 h-full rounded-r-full transition-all duration-500" style="width:${abPct}%"></div>
+        </div>
+        <p class="text-white/30 text-xs text-center tracking-widest border-t border-white/10 pt-3">
+          どんな人が来ているか
+        </p>
+      `;
+    }
+
+    function refresh() {
+      render();
+    }
+
+    function clearLogs() {
+      if (!confirm("ログデータをすべて削除しますか？")) return;
+      localStorage.removeItem("logs");
+      render();
+    }
+
+    // ── 初期描画 ──────────────────────────────────────────
+    render();
+  </script>
+
+</body>
+</html>
