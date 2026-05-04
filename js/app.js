@@ -396,6 +396,31 @@ function render() {
   }
 }
 
+// ── セッション行動ルート生成 ─────────────────────────────
+function buildPaths(logs) {
+  const sessions = {};
+
+  logs.forEach(l => {
+    if (!l.session_id) return;
+    if (!sessions[l.session_id]) sessions[l.session_id] = [];
+    sessions[l.session_id].push(l);
+  });
+
+  return Object.entries(sessions).map(([session_id, entries]) => {
+    const sorted = entries.slice().sort((a, b) =>
+      (a.timestamp || "").localeCompare(b.timestamp || "")
+    );
+
+    const path = sorted.flatMap(l => {
+      if (l.event === "inn_select" && l.inn)    return [l.inn];
+      if (l.event === "coupon_use" && l.coupon) return [l.coupon];
+      return [];
+    });
+
+    return { session_id, path };
+  });
+}
+
 // ── ダッシュボードデータ集計 ─────────────────────────────
 function collectDashData() {
   const raw = JSON.parse(localStorage.getItem("logs") || "[]");
