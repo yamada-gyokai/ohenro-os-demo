@@ -434,7 +434,7 @@ function collectDashData() {
   const japan    = formLogs.filter(l => l.country === "Japan").length;
   const abroad   = formLogs.filter(l => l.country !== "Japan").length;
 
-  return { spotVisits: Math.max(sessions, innSelectLogs.length), innSelects: innSelectLogs.length, innRanking, japan, abroad };
+  return { spotVisits: sessions, innSelects: innSelectLogs.length, innRanking, japan, abroad };
 }
 
 function renderBars(data) {
