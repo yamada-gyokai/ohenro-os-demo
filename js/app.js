@@ -418,6 +418,16 @@ function render() {
           `).join("")
       )
       + `<p class="text-white/40 text-xs text-center tracking-widest border-t border-white/10 pt-3 mt-1">${isJA ? "どの流れで人が動いているか" : "How people are moving"}</p>`;
+
+    // ⑤ インサイト
+    document.getElementById("dash-insight").innerHTML = routes[0]
+      ? `<div class="bg-red-600/20 border border-red-400/30 rounded-2xl px-5 py-5">
+           <p class="text-white/50 text-xs tracking-widest mb-2">${isJA ? "示唆" : "Insight"}</p>
+           <p class="text-white/60 text-xs mb-1">${isJA ? "最も多い導線：" : "Top path:"}</p>
+           <p class="text-white text-sm font-semibold mb-3">${routes[0].path}</p>
+           <p class="text-red-300/80 text-xs tracking-wide">👉 ${isJA ? "この流れを強化すると売上が伸びます" : "Strengthening this path will grow revenue."}</p>
+         </div>`
+      : "";
   }
 }
 
