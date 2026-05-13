@@ -71,6 +71,21 @@
   <script>
     let _map = null;
 
+    // ── GAS API ───────────────────────────────────────────
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbxiD8nzs7KR5nVV7sopeFNttAx2AJGQzE-nhY5IdBWuSg-GIrBpcNeQ8Krp-b2SVMCK/exec";
+
+    async function fetchLogs() {
+      try {
+        const res  = await fetch(GAS_URL);
+        const data = await res.json();
+        console.log("fetchLogs:", data);
+        return data;
+      } catch (e) {
+        console.error("fetchLogs error:", e);
+        return [];
+      }
+    }
+
     // ── 宿マスタ（locationMaster.json） ──────────────────
     let locationMaster = { inns: [], coupons: [] };
     fetch("locationMaster.json")
@@ -79,8 +94,7 @@
       .catch(() => {});
 
     // ── データ集計 ────────────────────────────────────────
-    function collectDashData() {
-      const raw = JSON.parse(localStorage.getItem("logs") || "[]");
+    function collectDashData(raw) {
 
       if (raw.length === 0) {
         return {
@@ -150,8 +164,9 @@
     }
 
     // ── 描画 ─────────────────────────────────────────────
-    function render() {
-      const d = collectDashData();
+    async function render() {
+      const raw = await fetchLogs();
+      const d   = collectDashData(raw);
 
       // デモ表示バッジ
       if (d.isDemo) {
@@ -234,11 +249,12 @@
           どんな人が来ているか
         </p>
       `;
+
+      renderMap(raw);
     }
 
     // ── 地図描画 ─────────────────────────────────────────
-    function renderMap() {
-      const logs = JSON.parse(localStorage.getItem("logs") || "[]");
+    function renderMap(logs) {
 
       // session_id ごとにグループ化
       const sessions = {};
@@ -269,19 +285,14 @@
 
     function refresh() {
       render();
-      renderMap();
     }
 
     function clearLogs() {
-      if (!confirm("ログデータをすべて削除しますか？")) return;
-      localStorage.removeItem("logs");
       render();
-      renderMap();
     }
 
     // ── 初期描画 ──────────────────────────────────────────
     render();
-    renderMap();
   </script>
 
 </body>
