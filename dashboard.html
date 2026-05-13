@@ -5,11 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>お遍路OS — Dashboard</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;400;600&display=swap" rel="stylesheet" />
   <style>
-    body { font-family: 'Noto Serif JP', serif; }
+    body { font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif; }
   </style>
 </head>
 <body class="min-h-screen text-gray-800 bg-gray-50">
@@ -17,14 +14,14 @@
   <!-- ── ヘッダー ── -->
   <header class="px-6 pt-10 pb-4 max-w-3xl mx-auto flex items-end justify-between gap-4">
     <div>
-      <p class="text-gray-400 text-xs tracking-[0.3em] uppercase mb-1">Admin Dashboard</p>
+      <p class="text-gray-700 text-xs tracking-[0.3em] uppercase mb-1">Admin Dashboard</p>
       <h1 class="text-gray-900 text-2xl font-semibold tracking-wider">お遍路OS</h1>
     </div>
     <div class="flex items-center gap-3">
-      <p id="updated-at" class="text-gray-400 text-xs tracking-wide"></p>
+      <p id="updated-at" class="text-gray-700 text-xs tracking-wide"></p>
       <button
         onclick="refresh()"
-        class="border border-gray-300 text-gray-400 text-xs tracking-widest px-4 py-2 rounded-full hover:border-gray-500 hover:text-gray-700 transition-colors"
+        class="border border-gray-300 text-gray-700 text-xs tracking-widest px-4 py-2 rounded-full hover:border-gray-500 hover:text-gray-700 transition-colors"
       >Refresh</button>
     </div>
   </header>
@@ -34,19 +31,19 @@
 
     <!-- ① 人の流れ -->
     <div class="bg-white border border-gray-200 rounded-2xl px-5 py-6 flex flex-col gap-4 shadow-sm">
-      <p class="text-gray-400 text-xs tracking-[0.25em] uppercase">人の流れ</p>
+      <p class="text-gray-700 text-xs tracking-[0.25em] uppercase">人の流れ</p>
       <div id="block-flow" class="flex flex-col gap-4"></div>
     </div>
 
     <!-- ② 宿ランキング -->
     <div class="bg-white border border-gray-200 rounded-2xl px-5 py-6 flex flex-col gap-4 shadow-sm">
-      <p class="text-gray-400 text-xs tracking-[0.25em] uppercase">宿ランキング</p>
+      <p class="text-gray-700 text-xs tracking-[0.25em] uppercase">宿ランキング</p>
       <div id="block-inns" class="flex flex-col gap-3"></div>
     </div>
 
     <!-- ③ 属性 -->
     <div class="bg-white border border-gray-200 rounded-2xl px-5 py-6 flex flex-col gap-4 shadow-sm">
-      <p class="text-gray-400 text-xs tracking-[0.25em] uppercase">属性</p>
+      <p class="text-gray-700 text-xs tracking-[0.25em] uppercase">属性</p>
       <div id="block-attr" class="flex flex-col gap-3"></div>
     </div>
 
@@ -54,10 +51,10 @@
 
   <!-- ── フッター ── -->
   <footer class="px-6 pb-8 max-w-3xl mx-auto flex items-center justify-between">
-    <p id="log-count" class="text-gray-300 text-xs tracking-wide"></p>
+    <p id="log-count" class="text-gray-700 text-xs tracking-wide"></p>
     <button
       onclick="clearLogs()"
-      class="text-gray-300 text-xs tracking-wide hover:text-red-400 transition-colors"
+      class="text-gray-700 text-xs tracking-wide hover:text-red-400 transition-colors"
     >Clear logs</button>
   </footer>
 
@@ -158,18 +155,18 @@
       document.getElementById("block-flow").innerHTML = `
         <div class="flex flex-col items-center gap-3 py-2">
           <div class="flex flex-col items-center gap-0.5">
-            <span class="text-gray-400 text-xs tracking-wide">${d.spot}番 訪問</span>
+            <span class="text-gray-700 text-xs tracking-wide">${d.spot}番 訪問</span>
             <span class="text-gray-900 text-5xl font-semibold leading-none">${d.spotVisits}</span>
-            <span class="text-gray-400 text-xs">人</span>
+            <span class="text-gray-700 text-xs">人</span>
           </div>
-          <span class="text-gray-300 text-xl">↓</span>
+          <span class="text-gray-700 text-xl">↓</span>
           <div class="flex flex-col items-center gap-0.5">
-            <span class="text-gray-400 text-xs tracking-wide">宿選択</span>
+            <span class="text-gray-700 text-xs tracking-wide">宿選択</span>
             <span class="text-gray-900 text-5xl font-semibold leading-none">${d.innSelects}</span>
-            <span class="text-gray-400 text-xs">人</span>
+            <span class="text-gray-700 text-xs">人</span>
           </div>
         </div>
-        <p class="text-gray-300 text-xs text-center tracking-widest border-t border-gray-100 pt-3">
+        <p class="text-gray-700 text-xs text-center tracking-widest border-t border-gray-100 pt-3">
           人はここまで来ている
         </p>
       `;
@@ -177,7 +174,7 @@
       // ② 宿ランキング
       if (d.innRanking.length === 0) {
         document.getElementById("block-inns").innerHTML =
-          `<p class="text-gray-300 text-xs text-center py-4">データなし</p>`;
+          `<p class="text-gray-700 text-xs text-center py-4">データなし</p>`;
       } else {
         const maxCount = d.innRanking[0].count;
         document.getElementById("block-inns").innerHTML =
@@ -185,7 +182,7 @@
             <div class="flex flex-col gap-1.5">
               <div class="flex items-center justify-between gap-2">
                 <div class="flex items-center gap-2">
-                  <span class="text-gray-300 text-xs w-3">${i + 1}</span>
+                  <span class="text-gray-700 text-xs w-3">${i + 1}</span>
                   <span class="text-gray-700 text-sm">${inn.name}</span>
                 </div>
                 <span class="text-gray-900 text-base font-semibold">${inn.count}</span>
@@ -193,7 +190,7 @@
               ${bar(Math.round(inn.count / maxCount * 100))}
             </div>
           `).join("")
-          + `<p class="text-gray-300 text-xs text-center tracking-widest border-t border-gray-100 pt-3 mt-1">
+          + `<p class="text-gray-700 text-xs text-center tracking-widest border-t border-gray-100 pt-3 mt-1">
                この宿に人が流れている
              </p>`;
       }
@@ -205,22 +202,22 @@
       document.getElementById("block-attr").innerHTML = `
         <div class="flex justify-around py-2">
           <div class="flex flex-col items-center gap-0.5">
-            <span class="text-gray-400 text-xs">日本</span>
+            <span class="text-gray-700 text-xs">日本</span>
             <span class="text-gray-900 text-5xl font-semibold leading-none">${d.japan}</span>
-            <span class="text-gray-300 text-xs">${jpPct}%</span>
+            <span class="text-gray-700 text-xs">${jpPct}%</span>
           </div>
-          <div class="text-gray-200 text-3xl self-center">|</div>
+          <div class="text-gray-500 text-3xl self-center">|</div>
           <div class="flex flex-col items-center gap-0.5">
-            <span class="text-gray-400 text-xs">海外</span>
+            <span class="text-gray-700 text-xs">海外</span>
             <span class="text-gray-900 text-5xl font-semibold leading-none">${d.abroad}</span>
-            <span class="text-gray-300 text-xs">${abPct}%</span>
+            <span class="text-gray-700 text-xs">${abPct}%</span>
           </div>
         </div>
         <div class="h-2 bg-gray-100 rounded-full overflow-hidden flex">
           <div class="bg-slate-600 h-full rounded-l-full transition-all duration-500" style="width:${jpPct}%"></div>
           <div class="bg-red-400 h-full rounded-r-full transition-all duration-500" style="width:${abPct}%"></div>
         </div>
-        <p class="text-gray-300 text-xs text-center tracking-widest border-t border-gray-100 pt-3">
+        <p class="text-gray-700 text-xs text-center tracking-widest border-t border-gray-100 pt-3">
           どんな人が来ているか
         </p>
       `;
