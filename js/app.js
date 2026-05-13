@@ -474,7 +474,7 @@ function buildRouteRanking(paths) {
 
 // ── ルートIDを人間が読める名前に変換 ────────────────────────
 function resolvePathLabel(path) {
-  return path.split("→").map(seg => {
+  return path.split("→").slice(0, 2).map(seg => {
     const inn = inns.find(i => i.id === seg);
     if (inn) return state.currentLang === "ja" ? inn.name_ja : inn.name_en;
     const cp = coupons.find(c => c.id === seg);
