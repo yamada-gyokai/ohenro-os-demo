@@ -52,14 +52,6 @@ function sendLog(payload) {
   localStorage.setItem("logs", JSON.stringify(logs));
 }
 
-// ── ログ保存（localStorage） ─────────────────────────────
-function saveLog(payload) {
-  const entry = { ...payload, session_id: state.session_id, timestamp: new Date().toISOString() };
-  const logs = JSON.parse(localStorage.getItem("logs") || "[]");
-  logs.push(entry);
-  localStorage.setItem("logs", JSON.stringify(logs));
-}
-
 // ── ナビゲーション ──────────────────────────────────────
 
 function setLanguage(lang) {
@@ -85,17 +77,14 @@ function selectInn(id) {
     location_source: "inn",
     timestamp:       new Date().toISOString(),
   });
-  saveLog({ event: "inn_select", inn: id, spot: "45" });
   state.screen = "experience";
   render();
 }
 
 function selectCoupon(id) {
   state.selectedCoupon = id;
-  sendLog({ session_id: state.session_id, event: "coupon_display",       timestamp: new Date().toISOString(), inn: state.selectedInn, coupon: id });
-  sendLog({ session_id: state.session_id, event: "navigate_experience",  timestamp: new Date().toISOString(), inn: state.selectedInn, coupon: id });
-  saveLog({ event: "coupon_display",      inn: state.selectedInn, coupon: id });
-  saveLog({ event: "navigate_experience", inn: state.selectedInn, coupon: id });
+  sendLog({ session_id: state.session_id, event: "coupon_display",      timestamp: new Date().toISOString(), inn: state.selectedInn, coupon: id });
+  sendLog({ session_id: state.session_id, event: "navigate_experience", timestamp: new Date().toISOString(), inn: state.selectedInn, coupon: id });
   state.screen = "ticket";
   render();
 }
@@ -115,7 +104,6 @@ function useTicket() {
     location_source: "coupon",
     timestamp:       new Date().toISOString(),
   });
-  saveLog({ event: "coupon_use", inn: state.selectedInn, coupon: state.selectedCoupon });
   state.screen = "form";
   render();
 }
