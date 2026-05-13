@@ -59,12 +59,12 @@
   </footer>
 
   <script>
-    // ── 宿名マスタ（data.jsと同期） ───────────────────────
-    const INN_MAP = {
-      "inn_01": "久万高原ホテル",
-      "inn_02": "遍路宿やまびこ",
-      "inn_03": "民宿いわや",
-    };
+    // ── 宿マスタ（locationMaster.json） ──────────────────
+    let locationMaster = { inns: [], coupons: [] };
+    fetch("locationMaster.json")
+      .then(r => r.json())
+      .then(d => { locationMaster = d; render(); })
+      .catch(() => {});
 
     // ── データ集計 ────────────────────────────────────────
     function collectDashData() {
@@ -76,9 +76,9 @@
           spotVisits: 18,
           innSelects: 12,
           innRanking: [
-            { name: "久万高原ホテル",   count: 6 },
-            { name: "遍路宿やまびこ",  count: 4 },
-            { name: "民宿いわや",      count: 2 },
+            { name: (locationMaster.inns[0]?.name_ja || "宿A"), count: 6 },
+            { name: (locationMaster.inns[1]?.name_ja || "宿B"), count: 4 },
+            { name: (locationMaster.inns[2]?.name_ja || "宿C"), count: 2 },
           ],
           japan: 5, abroad: 7,
           total: 0,
@@ -98,7 +98,8 @@
       // 宿ランキング集計
       const counts = {};
       innSelectLogs.forEach(l => {
-        const name = INN_MAP[l.inn] || l.inn || "不明";
+        const found = (locationMaster.inns || []).find(i => i.id === l.inn);
+        const name  = found ? found.name_ja : (l.inn || "不明");
         counts[name] = (counts[name] || 0) + 1;
       });
       const innRanking = Object.entries(counts)

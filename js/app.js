@@ -1,3 +1,16 @@
+let locationMaster = {};
+let inns = [];
+let coupons = [];
+fetch("locationMaster.json")
+  .then(res => res.json())
+  .then(data => {
+    locationMaster = data;
+    inns    = data.inns    || [];
+    coupons = data.coupons || [];
+    render();
+  })
+  .catch(() => {});
+
 const state = {
   currentLang:    "en",
   screen:         "welcome",
@@ -23,24 +36,6 @@ const countryOptions = {
   "Europe":        ["UK", "France", "Germany", "Italy", "Other"],
   "North America": ["USA", "Canada", "Mexico", "Other"],
   "Others":        ["Other"],
-};
-
-const demoData = {
-  inns: [
-    { name: "Kuma Kogen Hotel",    count: 12 },
-    { name: "Henro Inn Yamabiko",  count: 8  },
-    { name: "Minshuku Iwaya",      count: 3  },
-  ],
-  experiences: [
-    { name: "Tea & Talk",          count: 10 },
-    { name: "Farm Experience",     count: 6  },
-    { name: "Handmade Market",     count: 4  },
-  ],
-  countries: [
-    { name: "Taiwan",              count: 9  },
-    { name: "USA",                 count: 7  },
-    { name: "Japan",               count: 5  },
-  ],
 };
 
 // ── ログ送信（GAS） ─────────────────────────────────────
@@ -75,7 +70,17 @@ function goToInn() {
 
 function selectInn(id) {
   state.selectedInn = id;
-  sendLog({ session_id: state.session_id, event: "inn_select", timestamp: new Date().toISOString(), spot: "45", inn: id, location_type: "inn" });
+  const innLoc = locationMaster.inns?.find(i => i.id === id);
+  sendLog({
+    session_id:      state.session_id,
+    event:           "inn_select",
+    inn:             id,
+    lat:             innLoc?.lat,
+    lng:             innLoc?.lng,
+    location_type:   "estimated",
+    location_source: "inn",
+    timestamp:       new Date().toISOString(),
+  });
   saveLog({ event: "inn_select", inn: id, spot: "45" });
   state.screen = "experience";
   render();
@@ -94,7 +99,18 @@ function selectCoupon(id) {
 function useTicket() {
   state.usedCoupons.push(state.selectedCoupon);
   console.log("USED:", state.selectedCoupon);
-  sendLog({ session_id: state.session_id, event: "coupon_use", timestamp: new Date().toISOString(), inn: state.selectedInn, coupon: state.selectedCoupon });
+  const cpLoc = locationMaster.coupons?.find(c => c.id === state.selectedCoupon);
+  sendLog({
+    session_id:      state.session_id,
+    event:           "coupon_use",
+    inn:             state.selectedInn,
+    coupon:          state.selectedCoupon,
+    lat:             cpLoc?.lat,
+    lng:             cpLoc?.lng,
+    location_type:   "estimated",
+    location_source: "coupon",
+    timestamp:       new Date().toISOString(),
+  });
   saveLog({ event: "coupon_use", inn: state.selectedInn, coupon: state.selectedCoupon });
   state.screen = "form";
   render();
@@ -225,7 +241,7 @@ function render() {
         class="w-full bg-white/95 rounded-2xl px-6 py-5 text-left shadow-lg active:bg-white/80 transition-colors"
       >
         <p class="text-gray-800 text-lg font-semibold tracking-wide">
-          ${state.currentLang === "en" ? inn.name_en : inn.name_ja}
+          ${inn.name_ja}
         </p>
       </button>
     `).join("");
@@ -236,7 +252,7 @@ function render() {
     document.getElementById("exp-title").textContent = t.exp_title;
     document.getElementById("exp-back").textContent  = t.back;
 
-    const filtered = coupons.filter(c => c.inn_id === state.selectedInn);
+    const filtered = coupons.filter(c => c.related_inn === state.selectedInn);
 
     if (filtered.length === 0) {
       document.getElementById("exp-list").innerHTML =
@@ -248,10 +264,7 @@ function render() {
           class="w-full bg-white/95 rounded-2xl px-6 py-5 text-left shadow-lg active:bg-white/80 transition-colors"
         >
           <p class="text-gray-800 text-base font-semibold tracking-wide">
-            ${state.currentLang === "en" ? cp.title_en : cp.title_ja}
-          </p>
-          <p class="text-gray-500 text-sm mt-1">
-            ${state.currentLang === "en" ? cp.desc_en : cp.desc_ja}
+            ${cp.name_ja}
           </p>
         </button>
       `).join("");
@@ -263,8 +276,8 @@ function render() {
     const cp = coupons.find(c => c.id === state.selectedCoupon);
 
     document.getElementById("ticket-back").textContent  = t.back;
-    document.getElementById("ticket-title").textContent = state.currentLang === "en" ? cp.title_en : cp.title_ja;
-    document.getElementById("ticket-desc").textContent  = state.currentLang === "en" ? cp.desc_en  : cp.desc_ja;
+    document.getElementById("ticket-title").textContent = cp.name_ja;
+    document.getElementById("ticket-desc").textContent  = "";
     document.getElementById("ticket-cta").textContent   = t.ticket_cta;
 
     const phrases = [t.phrase_thank, t.phrase_please, t.phrase_ok, t.phrase_photo];
@@ -475,9 +488,9 @@ function buildRouteRanking(paths) {
 function resolvePathLabel(path) {
   return path.split("→").slice(0, 2).map(seg => {
     const inn = inns.find(i => i.id === seg);
-    if (inn) return state.currentLang === "ja" ? inn.name_ja : inn.name_en;
+    if (inn) return inn.name_ja;
     const cp = coupons.find(c => c.id === seg);
-    if (cp)  return state.currentLang === "ja" ? cp.title_ja : cp.title_en;
+    if (cp)  return cp.name_ja;
     return seg;
   }).join(" → ");
 }
@@ -492,9 +505,9 @@ function collectDashData() {
       spotVisits: 18,
       innSelects: 12,
       innRanking: [
-        { name: state.currentLang === "ja" ? "久万高原ホテル" : "Kuma Kogen Hotel",   count: 6 },
-        { name: state.currentLang === "ja" ? "遍路宿やまびこ"  : "Henro Inn Yamabiko", count: 4 },
-        { name: state.currentLang === "ja" ? "民宿いわや"      : "Minshuku Iwaya",     count: 2 },
+        { name: inns[0]?.name_ja || "宿A", count: 6 },
+        { name: inns[1]?.name_ja || "宿B", count: 4 },
+        { name: inns[2]?.name_ja || "宿C", count: 2 },
       ],
       japan: 5, abroad: 7,
     };
@@ -507,7 +520,7 @@ function collectDashData() {
   const counts = {};
   innSelectLogs.forEach(l => {
     const found = inns.find(i => i.id === l.inn);
-    const name  = found ? (state.currentLang === "ja" ? found.name_ja : found.name_en) : l.inn;
+    const name  = found ? found.name_ja : l.inn;
     counts[name] = (counts[name] || 0) + 1;
   });
   const innRanking = Object.entries(counts)

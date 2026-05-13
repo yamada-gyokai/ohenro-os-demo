@@ -1,0 +1,75 @@
+{
+  "spots": [
+    {
+      "id": "45",
+      "type": "temple",
+      "name_ja": "45番札所 岩屋寺",
+      "lat": 33.65889817672692,
+      "lng": 132.98080299691318
+    }
+  ],
+  "inns": [
+    {
+      "id": "inn_01",
+      "type": "inn",
+      "name_ja": "国民宿舎 古岩屋荘",
+      "lat": 33.667649,
+      "lng": 132.973043
+    },
+    {
+      "id": "inn_02",
+      "type": "inn",
+      "name_ja": "いやしの宿 八丁坂",
+      "lat": 33.670754,
+      "lng": 132.934223
+    },
+    {
+      "id": "inn_03",
+      "type": "inn",
+      "name_ja": "やすらぎの宿 でんこ",
+      "lat": 33.664410,
+      "lng": 132.897069
+    },
+    {
+      "id": "inn_04",
+      "type": "inn",
+      "name_ja": "桃李庵",
+      "lat": 33.660144,
+      "lng": 132.915720
+    }
+  ],
+  "coupons": [
+    {
+      "id": "cp_01",
+      "type": "experience",
+      "name_ja": "みかん畑ミニ体験",
+      "lat": 33.669000,
+      "lng": 132.971000,
+      "related_inn": "inn_01"
+    },
+    {
+      "id": "cp_02",
+      "type": "experience",
+      "name_ja": "手仕事マーケット",
+      "lat": 33.672000,
+      "lng": 132.932000,
+      "related_inn": "inn_02"
+    },
+    {
+      "id": "cp_03",
+      "type": "experience",
+      "name_ja": "里山カフェ休憩",
+      "lat": 33.665500,
+      "lng": 132.895500,
+      "related_inn": "inn_03"
+    },
+    {
+      "id": "cp_04",
+      "type": "experience",
+      "name_ja": "農家ランチ体験",
+      "lat": 33.661500,
+      "lng": 132.913500,
+      "related_inn": "inn_04"
+    }
+  ]
+}
