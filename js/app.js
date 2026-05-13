@@ -326,10 +326,9 @@ function render() {
 
   if (state.screen === "done") {
     showScreen("screen-done");
-    document.getElementById("done-title").textContent   = t.done_title;
-    document.getElementById("done-msg").textContent     = t.done_msg;
-    document.getElementById("done-results").textContent = t.done_results;
-    document.getElementById("done-home").textContent    = t.done_home;
+    document.getElementById("done-title").textContent = t.done_title;
+    document.getElementById("done-msg").textContent   = t.done_msg;
+    document.getElementById("done-home").textContent  = t.done_home;
   }
 
   if (state.screen === "dashboard") {
