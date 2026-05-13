@@ -255,21 +255,31 @@
 
     // ── 地図描画 ─────────────────────────────────────────
     function renderMap(logs) {
-      const points = logs
-        .filter(l => l.lat && l.lng)
-        .map(l => [parseFloat(l.lat), parseFloat(l.lng)]);
+      const validLogs = logs.filter(l => l.lat && l.lng);
 
       if (_map) { _map.remove(); _map = null; }
-      if (points.length === 0) return;
+      if (validLogs.length === 0) return;
 
-      _map = L.map('map').setView(points[0], 13);
+      const allPoints = validLogs.map(l => [parseFloat(l.lat), parseFloat(l.lng)]);
+      _map = L.map('map').setView(allPoints[0], 13);
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(_map);
 
-      points.forEach(p => L.marker(p).addTo(_map));
+      allPoints.forEach(p => L.marker(p).addTo(_map));
 
-      if (points.length >= 2) {
-        L.polyline(points, { color: 'red' }).addTo(_map);
-      }
+      const grouped = {};
+      validLogs.forEach(l => {
+        if (!grouped[l.session_id]) grouped[l.session_id] = [];
+        grouped[l.session_id].push(l);
+      });
+
+      Object.values(grouped).forEach(sessionLogs => {
+        const latlngs = sessionLogs
+          .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp))
+          .map(l => [parseFloat(l.lat), parseFloat(l.lng)]);
+        if (latlngs.length >= 2) {
+          L.polyline(latlngs, { color: 'red', weight: 4 }).addTo(_map);
+        }
+      });
     }
 
     function refresh() {

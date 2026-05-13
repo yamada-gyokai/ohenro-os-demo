@@ -11,14 +11,18 @@ fetch("locationMaster.json")
   })
   .catch(() => {});
 
+function generateSessionId() {
+  return "s_" + Date.now() + "_" + Math.random().toString(36).slice(2, 7);
+}
+
+if (!localStorage.getItem("session_id")) {
+  localStorage.setItem("session_id", generateSessionId());
+}
+
 const state = {
   currentLang:    "en",
   screen:         "welcome",
-  session_id:     (localStorage.getItem("session_id") || (() => {
-                    const id = "s_" + Date.now() + "_" + Math.random().toString(36).slice(2, 7);
-                    localStorage.setItem("session_id", id);
-                    return id;
-                  })()),
+  session_id:     localStorage.getItem("session_id"),
   selectedInn:    null,
   selectedCoupon: null,
   usedCoupons:    [],
