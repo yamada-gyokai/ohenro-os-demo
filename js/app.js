@@ -407,7 +407,7 @@ function render() {
               <div class="flex items-center justify-between gap-2">
                 <div class="flex items-center gap-2">
                   <span class="text-white/30 text-xs w-3">${i + 1}</span>
-                  <span class="text-white/80 text-xs">${r.path}</span>
+                  <span class="text-white/80 text-xs">${resolvePathLabel(r.path)}</span>
                 </div>
                 <span class="text-white text-sm font-semibold">${r.count}</span>
               </div>
@@ -424,7 +424,7 @@ function render() {
       ? `<div class="bg-red-600/20 border border-red-400/30 rounded-2xl px-5 py-5">
            <p class="text-white/50 text-xs tracking-widest mb-2">${isJA ? "示唆" : "Insight"}</p>
            <p class="text-white/60 text-xs mb-1">${isJA ? "最も多い導線：" : "Top path:"}</p>
-           <p class="text-white text-sm font-semibold mb-3">${routes[0].path}</p>
+           <p class="text-white text-sm font-semibold mb-3">${resolvePathLabel(routes[0].path)}</p>
            <p class="text-red-300/80 text-xs tracking-wide">👉 ${isJA ? "この流れを強化すると売上が伸びます" : "Strengthening this path will grow revenue."}</p>
          </div>`
       : "";
@@ -470,6 +470,17 @@ function buildRouteRanking(paths) {
     .map(([path, count]) => ({ path, count }))
     .sort((a, b) => b.count - a.count)
     .slice(0, 3);
+}
+
+// ── ルートIDを人間が読める名前に変換 ────────────────────────
+function resolvePathLabel(path) {
+  return path.split("→").map(seg => {
+    const inn = inns.find(i => i.id === seg);
+    if (inn) return state.currentLang === "ja" ? inn.name_ja : inn.name_en;
+    const cp = coupons.find(c => c.id === seg);
+    if (cp)  return state.currentLang === "ja" ? cp.title_ja : cp.title_en;
+    return seg;
+  }).join(" → ");
 }
 
 // ── ダッシュボードデータ集計 ─────────────────────────────
