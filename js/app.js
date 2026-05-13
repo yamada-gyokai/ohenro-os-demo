@@ -46,6 +46,10 @@ function sendLog(payload) {
     headers: { "Content-Type": "text/plain" },
     body:    JSON.stringify(payload),
   }).catch(() => {});
+
+  const logs = JSON.parse(localStorage.getItem("logs") || "[]");
+  logs.push(payload);
+  localStorage.setItem("logs", JSON.stringify(logs));
 }
 
 // ── ログ保存（localStorage） ─────────────────────────────

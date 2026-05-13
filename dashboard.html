@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>お遍路OS — Dashboard</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <style>
     body { font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif; }
   </style>
@@ -49,6 +51,14 @@
 
   </main>
 
+  <!-- ── 地図 ── -->
+  <section class="px-6 pb-6 max-w-3xl mx-auto">
+    <div class="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
+      <p class="text-gray-700 text-xs tracking-[0.25em] uppercase px-5 pt-5 pb-3">行動マップ</p>
+      <div id="map" style="height: 300px;"></div>
+    </div>
+  </section>
+
   <!-- ── フッター ── -->
   <footer class="px-6 pb-8 max-w-3xl mx-auto flex items-center justify-between">
     <p id="log-count" class="text-gray-700 text-xs tracking-wide"></p>
@@ -59,6 +69,8 @@
   </footer>
 
   <script>
+    let _map = null;
+
     // ── 宿マスタ（locationMaster.json） ──────────────────
     let locationMaster = { inns: [], coupons: [] };
     fetch("locationMaster.json")
@@ -224,18 +236,52 @@
       `;
     }
 
+    // ── 地図描画 ─────────────────────────────────────────
+    function renderMap() {
+      const logs = JSON.parse(localStorage.getItem("logs") || "[]");
+
+      // session_id ごとにグループ化
+      const sessions = {};
+      logs.forEach(l => {
+        if (!l.session_id || !l.lat || !l.lng) return;
+        if (!sessions[l.session_id]) sessions[l.session_id] = [];
+        sessions[l.session_id].push([parseFloat(l.lat), parseFloat(l.lng)]);
+      });
+
+      // 全点（マーカー用）
+      const allPoints = Object.values(sessions).flat();
+
+      if (_map) { _map.remove(); _map = null; }
+      if (allPoints.length === 0) return;
+
+      _map = L.map('map').setView(allPoints[0], 13);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(_map);
+
+      // マーカー（全点）
+      allPoints.forEach(p => L.marker(p).addTo(_map));
+
+      // セッションごとに線を描画
+      Object.values(sessions).forEach(points => {
+        if (points.length < 2) return;
+        L.polyline(points, { color: 'red' }).addTo(_map);
+      });
+    }
+
     function refresh() {
       render();
+      renderMap();
     }
 
     function clearLogs() {
       if (!confirm("ログデータをすべて削除しますか？")) return;
       localStorage.removeItem("logs");
       render();
+      renderMap();
     }
 
     // ── 初期描画 ──────────────────────────────────────────
     render();
+    renderMap();
   </script>
 
 </body>
