@@ -592,7 +592,7 @@ function renderBars(data) {
   const spot   = params.get("spot");
   if (!spot) return;
 
-  const flagKey = "spot_visit_sent_" + spot;
+  const flagKey = "spot_visit_sent_" + spot + "_" + state.session_id;
   if (localStorage.getItem(flagKey)) return;
   localStorage.setItem(flagKey, "1");
 
