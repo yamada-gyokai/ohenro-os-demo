@@ -377,7 +377,20 @@
         return "—";
       }
 
+      const COLORS = [
+        "#ef4444", "#3b82f6", "#22c55e", "#eab308",
+        "#a855f7", "#ec4899", "#14b8a6",
+      ];
+
+      // session_id → color を事前に割り当て
+      const sessionIds  = [...new Set(validLogs.map(l => l.session_id).filter(Boolean))];
+      const sessionColor = {};
+      sessionIds.forEach((sid, idx) => {
+        sessionColor[sid] = COLORS[idx % COLORS.length];
+      });
+
       validLogs.forEach(l => {
+        const color = sessionColor[l.session_id] || "#888";
         const time  = l.timestamp
           ? new Date(l.timestamp).toLocaleString("ja-JP", { month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit" })
           : "—";
@@ -388,7 +401,9 @@
         const popup = `
           <div style="font-size:12px;line-height:1.8;min-width:140px;">
             <div style="color:#888;font-size:10px;margin-bottom:4px;">セッション</div>
-            <div style="font-weight:600;margin-bottom:6px;">${sid}</div>
+            <div style="font-weight:600;margin-bottom:6px;">
+              <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${color};margin-right:5px;vertical-align:middle;"></span>${sid}
+            </div>
             <div style="color:#888;font-size:10px;">時刻</div>
             <div style="margin-bottom:6px;">${time}</div>
             <div style="color:#888;font-size:10px;">イベント</div>
@@ -408,12 +423,13 @@
         grouped[l.session_id].push(l);
       });
 
-      Object.values(grouped).forEach(sessionLogs => {
+      Object.entries(grouped).forEach(([sid, sessionLogs]) => {
+        const color   = sessionColor[sid] || "#888";
         const latlngs = sessionLogs
           .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp))
           .map(l => [parseFloat(l.lat), parseFloat(l.lng)]);
         if (latlngs.length >= 2) {
-          L.polyline(latlngs, { color: 'red', weight: 4 }).addTo(_map);
+          L.polyline(latlngs, { color, weight: 4 }).addTo(_map);
         }
       });
     }
