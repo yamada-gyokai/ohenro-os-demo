@@ -107,6 +107,8 @@
             { name: (locationMaster.inns[2]?.name_ja || "宿C"), count: 2 },
           ],
           japan: 5, abroad: 7,
+          genderCounts: { Male: 4, Female: 6, Other: 1, "Prefer not to say": 1 },
+          ageCounts:    { "10s": 1, "20s": 4, "30s": 3, "40s": 3, "50+": 1 },
           total: 0,
           lastAt: null,
         };
@@ -133,10 +135,26 @@
         .sort((a, b) => b.count - a.count)
         .slice(0, 3);
 
-      // 属性（country フィールドを持つ = form 送信ログ）
+      // 属性（coupon_use ログが属性フィールドを持つ）
       const formLogs = raw.filter(l => l.country);
       const japan    = formLogs.filter(l => l.country === "Japan").length;
       const abroad   = formLogs.filter(l => l.country !== "Japan").length;
+
+      // 性別集計
+      const genderKeys = ["Male", "Female", "Other", "Prefer not to say"];
+      const genderCounts = {};
+      genderKeys.forEach(k => { genderCounts[k] = 0; });
+      formLogs.forEach(l => {
+        if (l.gender && genderCounts[l.gender] !== undefined) genderCounts[l.gender]++;
+      });
+
+      // 年代集計
+      const ageKeys = ["10s", "20s", "30s", "40s", "50+"];
+      const ageCounts = {};
+      ageKeys.forEach(k => { ageCounts[k] = 0; });
+      formLogs.forEach(l => {
+        if (l.age && ageCounts[l.age] !== undefined) ageCounts[l.age]++;
+      });
 
       // 最終ログ時刻
       const timestamps = raw.map(l => l.timestamp).filter(Boolean).sort();
@@ -148,7 +166,7 @@
         spot,
         innSelects: innSelectLogs.length,
         innRanking,
-        japan, abroad,
+        japan, abroad, genderCounts, ageCounts,
         total: raw.length,
         lastAt,
       };
@@ -227,6 +245,37 @@
       const total = (d.japan + d.abroad) || 1;
       const jpPct = Math.round(d.japan  / total * 100);
       const abPct = Math.round(d.abroad / total * 100);
+
+      const genderKeys = ["Male", "Female", "Other", "Prefer not to say"];
+      const genderMax  = Math.max(...genderKeys.map(k => d.genderCounts[k] || 0)) || 1;
+      const genderRows = genderKeys.map(k => {
+        const v = d.genderCounts[k] || 0;
+        const pct = Math.round(v / genderMax * 100);
+        return `
+          <div class="flex flex-col gap-1">
+            <div class="flex justify-between text-xs">
+              <span class="text-gray-700">${k}</span>
+              <span class="text-gray-900 font-semibold">${v}</span>
+            </div>
+            ${bar(pct)}
+          </div>`;
+      }).join("");
+
+      const ageKeys = ["10s", "20s", "30s", "40s", "50+"];
+      const ageMax  = Math.max(...ageKeys.map(k => d.ageCounts[k] || 0)) || 1;
+      const ageRows = ageKeys.map(k => {
+        const v = d.ageCounts[k] || 0;
+        const pct = Math.round(v / ageMax * 100);
+        return `
+          <div class="flex flex-col gap-1">
+            <div class="flex justify-between text-xs">
+              <span class="text-gray-700">${k}</span>
+              <span class="text-gray-900 font-semibold">${v}</span>
+            </div>
+            ${bar(pct)}
+          </div>`;
+      }).join("");
+
       document.getElementById("block-attr").innerHTML = `
         <div class="flex justify-around py-2">
           <div class="flex flex-col items-center gap-0.5">
@@ -245,6 +294,10 @@
           <div class="bg-slate-600 h-full rounded-l-full transition-all duration-500" style="width:${jpPct}%"></div>
           <div class="bg-red-400 h-full rounded-r-full transition-all duration-500" style="width:${abPct}%"></div>
         </div>
+        <p class="text-gray-700 text-xs tracking-widest border-t border-gray-100 pt-3 pb-1">性別</p>
+        ${genderRows}
+        <p class="text-gray-700 text-xs tracking-widest border-t border-gray-100 pt-3 pb-1">年代</p>
+        ${ageRows}
         <p class="text-gray-700 text-xs text-center tracking-widest border-t border-gray-100 pt-3">
           どんな人が来ているか
         </p>
