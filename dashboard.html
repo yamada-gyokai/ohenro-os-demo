@@ -348,7 +348,51 @@
       _map = L.map('map').setView(allPoints[0], 13);
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(_map);
 
-      allPoints.forEach(p => L.marker(p).addTo(_map));
+      const eventLabel = {
+        inn_select:          "宿選択",
+        coupon_use:          "チケット利用",
+        coupon_display:      "チケット表示",
+        navigate_experience: "体験導線",
+      };
+
+      function resolveName(log) {
+        const inns    = locationMaster.inns    || [];
+        const coupons = locationMaster.coupons || [];
+        if (log.inn) {
+          const found = inns.find(i => i.id === log.inn);
+          if (found) return found.name_ja;
+        }
+        if (log.coupon) {
+          const found = coupons.find(c => c.id === log.coupon);
+          if (found) return found.name_ja;
+        }
+        return "—";
+      }
+
+      validLogs.forEach(l => {
+        const time  = l.timestamp
+          ? new Date(l.timestamp).toLocaleString("ja-JP", { month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit" })
+          : "—";
+        const event = eventLabel[l.event] || l.event || "—";
+        const place = resolveName(l);
+        const sid   = l.session_id ? l.session_id.slice(0, 12) + "…" : "—";
+
+        const popup = `
+          <div style="font-size:12px;line-height:1.8;min-width:140px;">
+            <div style="color:#888;font-size:10px;margin-bottom:4px;">セッション</div>
+            <div style="font-weight:600;margin-bottom:6px;">${sid}</div>
+            <div style="color:#888;font-size:10px;">時刻</div>
+            <div style="margin-bottom:6px;">${time}</div>
+            <div style="color:#888;font-size:10px;">イベント</div>
+            <div style="margin-bottom:6px;">${event}</div>
+            <div style="color:#888;font-size:10px;">場所</div>
+            <div>${place}</div>
+          </div>`;
+
+        L.marker([parseFloat(l.lat), parseFloat(l.lng)])
+          .bindPopup(popup)
+          .addTo(_map);
+      });
 
       const grouped = {};
       validLogs.forEach(l => {
