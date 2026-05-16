@@ -339,7 +339,8 @@
 
     // ── 地図描画 ─────────────────────────────────────────
     function renderMap(logs) {
-      const validLogs = logs.filter(l => l.lat && l.lng);
+      const TARGET_EVENTS = new Set(["spot_visit", "inn_select", "coupon_use"]);
+      const validLogs = logs.filter(l => l.lat && l.lng && TARGET_EVENTS.has(l.event));
 
       if (_map) { _map.remove(); _map = null; }
       if (validLogs.length === 0) return;
@@ -349,6 +350,7 @@
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(_map);
 
       const eventLabel = {
+        spot_visit:          "札所訪問",
         inn_select:          "宿選択",
         coupon_use:          "チケット利用",
         coupon_display:      "チケット表示",
@@ -356,8 +358,14 @@
       };
 
       function resolveName(log) {
+        const spots   = locationMaster.spots   || [];
         const inns    = locationMaster.inns    || [];
         const coupons = locationMaster.coupons || [];
+        if (log.event === "spot_visit" && log.spot) {
+          const found = spots.find(s => s.id === log.spot);
+          if (found) return found.name_ja;
+          return log.spot + "番札所";
+        }
         if (log.inn) {
           const found = inns.find(i => i.id === log.inn);
           if (found) return found.name_ja;

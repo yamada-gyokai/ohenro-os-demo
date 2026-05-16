@@ -1,8 +1,16 @@
 {
   "spots": [
     {
+      "id": "44",
+      "type": "spot",
+      "name_ja": "44番札所 大寶寺",
+      "name_en": "Temple 44 Daihoji",
+      "lat": 33.680088,
+      "lng": 132.956573
+    },
+    {
       "id": "45",
-      "type": "temple",
+      "type": "spot",
       "name_ja": "45番札所 岩屋寺",
       "name_en": "Temple 45 Iwayaji",
       "lat": 33.65889817672692,

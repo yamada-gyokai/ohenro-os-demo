@@ -586,4 +586,35 @@ function renderBars(data) {
   }).join("");
 }
 
+// ── QRパラメータから spot_visit を送信 ──────────────────
+(function sendSpotVisit() {
+  const params = new URLSearchParams(window.location.search);
+  const spot   = params.get("spot");
+  if (!spot) return;
+
+  const flagKey = "spot_visit_sent_" + spot;
+  if (localStorage.getItem(flagKey)) return;
+  localStorage.setItem(flagKey, "1");
+
+  function doSend() {
+    const spotData = (locationMaster.spots || []).find(s => s.id === spot);
+    sendLog({
+      session_id:    state.session_id,
+      event:         "spot_visit",
+      spot:          spot,
+      lat:           spotData?.lat,
+      lng:           spotData?.lng,
+      location_type: "estimated",
+      timestamp:     new Date().toISOString(),
+    });
+  }
+
+  // locationMaster fetch完了後に送信（未完了なら1秒待機）
+  if (locationMaster.spots) {
+    doSend();
+  } else {
+    setTimeout(doSend, 1000);
+  }
+})();
+
 render();
