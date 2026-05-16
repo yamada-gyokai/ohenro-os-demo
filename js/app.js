@@ -312,9 +312,14 @@ function render() {
 
     // Region
     document.getElementById("form-region-label").textContent = t.form_region;
-    const regions = ["Asia", "Europe", "North America", "Others"];
-    document.getElementById("region-group").innerHTML = regions.map(r => `
-      <button onclick="selectRegion('${r}')" class="${btnClass(f.region === r)}">${r}</button>
+    const regionOptions = [
+      { value: "Asia",          label: t.region_asia   },
+      { value: "Europe",        label: t.region_europe },
+      { value: "North America", label: t.region_na     },
+      { value: "Others",        label: t.region_others },
+    ];
+    document.getElementById("region-group").innerHTML = regionOptions.map(r => `
+      <button onclick="selectRegion('${r.value}')" class="${btnClass(f.region === r.value)}">${r.label}</button>
     `).join("");
 
     // Country（regionが選択されたら表示）
