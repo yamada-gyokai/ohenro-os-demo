@@ -15,6 +15,19 @@ function generateSessionId() {
   return "s_" + Date.now() + "_" + Math.random().toString(36).slice(2, 7);
 }
 
+let dashboardLogs = [];
+
+async function fetchLogs() {
+  try {
+    const res  = await fetch(CONFIG.GAS_URL);
+    const data = await res.json();
+    return Array.isArray(data) ? data : [];
+  } catch (e) {
+    console.error("fetchLogs error:", e);
+    return [];
+  }
+}
+
 if (!localStorage.getItem("session_id")) {
   localStorage.setItem("session_id", generateSessionId());
 }
@@ -96,18 +109,6 @@ function selectCoupon(id) {
 function useTicket() {
   state.usedCoupons.push(state.selectedCoupon);
   console.log("USED:", state.selectedCoupon);
-  const cpLoc = locationMaster.coupons?.find(c => c.id === state.selectedCoupon);
-  sendLog({
-    session_id:      state.session_id,
-    event:           "coupon_use",
-    inn:             state.selectedInn,
-    coupon:          state.selectedCoupon,
-    lat:             cpLoc?.lat,
-    lng:             cpLoc?.lng,
-    location_type:   "estimated",
-    location_source: "coupon",
-    timestamp:       new Date().toISOString(),
-  });
   state.screen = "form";
   render();
 }
@@ -121,8 +122,9 @@ function goBack() {
   render();
 }
 
-function goToDashboard() {
+async function goToDashboard() {
   state.screen = "dashboard";
+  dashboardLogs = await fetchLogs();
   render();
 }
 
@@ -168,6 +170,22 @@ function submitForm() {
   const country = state.form.country === "Other"
     ? (state.form.countryInput || "Other")
     : state.form.country;
+
+  const cpLoc = locationMaster.coupons?.find(c => c.id === state.selectedCoupon);
+  sendLog({
+    session_id:      state.session_id,
+    event:           "coupon_use",
+    inn:             state.selectedInn,
+    coupon:          state.selectedCoupon,
+    lat:             cpLoc?.lat,
+    lng:             cpLoc?.lng,
+    location_type:   "estimated",
+    location_source: "coupon",
+    country:         country,
+    age:             state.form.age,
+    gender:          state.form.gender,
+    timestamp:       new Date().toISOString(),
+  });
 
   const log = {
     coupon:    state.selectedCoupon,
@@ -344,7 +362,7 @@ function render() {
     showScreen("screen-dashboard");
     document.getElementById("dash-back").textContent = t.back;
 
-    const d   = collectDashData();
+    const d   = collectDashData(dashboardLogs);
     const isJA = state.currentLang === "ja";
 
     // ① 人の流れ
@@ -403,8 +421,7 @@ function render() {
     `;
 
     // ④ ルートランキング
-    const logs   = JSON.parse(localStorage.getItem("logs") || "[]");
-    const routes = buildRouteRanking(buildPaths(logs));
+    const routes = buildRouteRanking(buildPaths(dashboardLogs));
     const routeMax = routes[0]?.count || 1;
 
     document.getElementById("dash-routes").innerHTML =
@@ -492,8 +509,7 @@ function resolvePathLabel(path) {
 }
 
 // ── ダッシュボードデータ集計 ─────────────────────────────
-function collectDashData() {
-  const raw = JSON.parse(localStorage.getItem("logs") || "[]");
+function collectDashData(raw) {
 
   // ログなし → PoC用ダミー
   if (raw.length === 0) {
