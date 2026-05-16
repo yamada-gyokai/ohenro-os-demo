@@ -239,7 +239,12 @@ function render() {
     showScreen("screen-welcome");
     document.getElementById("title").textContent    = t.title;
     document.getElementById("subtitle").textContent = t.subtitle;
-    document.getElementById("location").textContent = t.location;
+    const spotData = urlSpot
+      ? (locationMaster.spots || []).find(s => s.id === urlSpot)
+      : null;
+    document.getElementById("location").textContent = spotData
+      ? (state.currentLang === "ja" ? spotData.name_ja : spotData.name_en)
+      : t.location;
     document.getElementById("catch").textContent    = t.catch;
     document.getElementById("cta").textContent      = t.cta;
   }
@@ -587,9 +592,10 @@ function renderBars(data) {
 }
 
 // ── QRパラメータから spot_visit を送信 ──────────────────
+const urlSpot = new URLSearchParams(window.location.search).get("spot");
+
 (function sendSpotVisit() {
-  const params = new URLSearchParams(window.location.search);
-  const spot   = params.get("spot");
+  const spot = urlSpot;
   if (!spot) return;
 
   const flagKey = "spot_visit_sent_" + spot + "_" + state.session_id;
