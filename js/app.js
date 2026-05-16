@@ -346,9 +346,15 @@ function render() {
 
     // Age
     document.getElementById("form-age-label").textContent = t.form_age;
-    const ages = ["10s", "20s", "30s", "40s", "50+"];
-    document.getElementById("age-group").innerHTML = ages.map(a => `
-      <button onclick="selectAge('${a}')" class="${btnClass(f.age === a)}">${a}</button>
+    const ageOptions = [
+      { value: "10s", label: t.age_10s },
+      { value: "20s", label: t.age_20s },
+      { value: "30s", label: t.age_30s },
+      { value: "40s", label: t.age_40s },
+      { value: "50+", label: t.age_50p },
+    ];
+    document.getElementById("age-group").innerHTML = ageOptions.map(a => `
+      <button onclick="selectAge('${a.value}')" class="${btnClass(f.age === a.value)}">${a.label}</button>
     `).join("");
 
     // Gender
