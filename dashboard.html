@@ -9,6 +9,17 @@
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <style>
     body { font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif; }
+    #map-wrapper.is-fullscreen {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      z-index: 9999;
+      border-radius: 0;
+      overflow: hidden;
+    }
+    #map-wrapper.is-fullscreen #map {
+      height: 100% !important;
+    }
   </style>
 </head>
 <body class="min-h-screen text-gray-800 bg-gray-50">
@@ -53,8 +64,15 @@
 
   <!-- ── 地図 ── -->
   <section class="px-6 pb-6 max-w-3xl mx-auto">
-    <div class="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
-      <p class="text-gray-700 text-xs tracking-[0.25em] uppercase px-5 pt-5 pb-3">行動マップ</p>
+    <div id="map-wrapper" class="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
+      <div class="flex items-center justify-between px-5 pt-5 pb-3">
+        <p class="text-gray-700 text-xs tracking-[0.25em] uppercase">行動マップ</p>
+        <button
+          onclick="toggleFullscreen()"
+          class="text-gray-400 hover:text-gray-700 text-lg leading-none transition-colors"
+          title="全画面"
+        >⛶</button>
+      </div>
       <div id="map" style="height: 300px;"></div>
     </div>
   </section>
@@ -70,6 +88,19 @@
 
   <script>
     let _map = null;
+    let _fullscreen = false;
+
+    function toggleFullscreen() {
+      const wrapper = document.getElementById("map-wrapper");
+      _fullscreen = !_fullscreen;
+      wrapper.classList.toggle("is-fullscreen", _fullscreen);
+      // スクロール暴走防止
+      document.body.style.overflow = _fullscreen ? "hidden" : "";
+      // Leaflet タイルずれ修正
+      if (_map) {
+        setTimeout(() => _map.invalidateSize(), 50);
+      }
+    }
 
     // ── GAS API ───────────────────────────────────────────
     const GAS_URL = "https://script.google.com/macros/s/AKfycbxiD8nzs7KR5nVV7sopeFNttAx2AJGQzE-nhY5IdBWuSg-GIrBpcNeQ8Krp-b2SVMCK/exec";
