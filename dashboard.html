@@ -127,7 +127,7 @@
       const counts = {};
       innSelectLogs.forEach(l => {
         const found = (locationMaster.inns || []).find(i => i.id === l.inn);
-        const name  = found ? found.name_ja : (l.inn || "不明");
+        const name  = found ? (found.name_ja || found.name_en || l.inn) : (l.inn || "不明");
         counts[name] = (counts[name] || 0) + 1;
       });
       const innRanking = Object.entries(counts)

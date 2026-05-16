@@ -255,7 +255,7 @@ function render() {
         class="w-full bg-white/95 rounded-2xl px-6 py-5 text-left shadow-lg active:bg-white/80 transition-colors"
       >
         <p class="text-gray-800 text-lg font-semibold tracking-wide">
-          ${inn.name_ja}
+          ${state.currentLang === "ja" ? inn.name_ja : (inn.name_en || inn.name_ja)}
         </p>
       </button>
     `).join("");
@@ -278,7 +278,7 @@ function render() {
           class="w-full bg-white/95 rounded-2xl px-6 py-5 text-left shadow-lg active:bg-white/80 transition-colors"
         >
           <p class="text-gray-800 text-base font-semibold tracking-wide">
-            ${cp.name_ja}
+            ${state.currentLang === "ja" ? cp.name_ja : (cp.name_en || cp.name_ja)}
           </p>
         </button>
       `).join("");
@@ -290,7 +290,7 @@ function render() {
     const cp = coupons.find(c => c.id === state.selectedCoupon);
 
     document.getElementById("ticket-back").textContent  = t.back;
-    document.getElementById("ticket-title").textContent = cp.name_ja;
+    document.getElementById("ticket-title").textContent = state.currentLang === "ja" ? cp.name_ja : (cp.name_en || cp.name_ja);
     document.getElementById("ticket-desc").textContent  = "";
     document.getElementById("ticket-cta").textContent   = t.ticket_cta;
 
@@ -501,9 +501,10 @@ function buildRouteRanking(paths) {
 function resolvePathLabel(path) {
   return path.split("→").slice(0, 2).map(seg => {
     const inn = inns.find(i => i.id === seg);
-    if (inn) return inn.name_ja;
+    const isJA = state.currentLang === "ja";
+    if (inn) return isJA ? inn.name_ja : (inn.name_en || inn.name_ja);
     const cp = coupons.find(c => c.id === seg);
-    if (cp)  return cp.name_ja;
+    if (cp)  return isJA ? cp.name_ja  : (cp.name_en  || cp.name_ja);
     return seg;
   }).join(" → ");
 }
@@ -517,9 +518,9 @@ function collectDashData(raw) {
       spotVisits: 18,
       innSelects: 12,
       innRanking: [
-        { name: inns[0]?.name_ja || "宿A", count: 6 },
-        { name: inns[1]?.name_ja || "宿B", count: 4 },
-        { name: inns[2]?.name_ja || "宿C", count: 2 },
+        { name: (state.currentLang === "ja" ? inns[0]?.name_ja : inns[0]?.name_en) || "Inn A", count: 6 },
+        { name: (state.currentLang === "ja" ? inns[1]?.name_ja : inns[1]?.name_en) || "Inn B", count: 4 },
+        { name: (state.currentLang === "ja" ? inns[2]?.name_ja : inns[2]?.name_en) || "Inn C", count: 2 },
       ],
       japan: 5, abroad: 7,
     };
@@ -532,7 +533,7 @@ function collectDashData(raw) {
   const counts = {};
   innSelectLogs.forEach(l => {
     const found = inns.find(i => i.id === l.inn);
-    const name  = found ? found.name_ja : l.inn;
+    const name  = found ? (state.currentLang === "ja" ? found.name_ja : (found.name_en || found.name_ja)) : l.inn;
     counts[name] = (counts[name] || 0) + 1;
   });
   const innRanking = Object.entries(counts)
