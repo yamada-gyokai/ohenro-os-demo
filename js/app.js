@@ -311,6 +311,7 @@ function render() {
     document.getElementById("form-back").textContent  = t.back;
 
     // Region
+    document.getElementById("form-region-label").textContent = t.form_region;
     const regions = ["Asia", "Europe", "North America", "Others"];
     document.getElementById("region-group").innerHTML = regions.map(r => `
       <button onclick="selectRegion('${r}')" class="${btnClass(f.region === r)}">${r}</button>
@@ -339,15 +340,22 @@ function render() {
     }
 
     // Age
+    document.getElementById("form-age-label").textContent = t.form_age;
     const ages = ["10s", "20s", "30s", "40s", "50+"];
     document.getElementById("age-group").innerHTML = ages.map(a => `
       <button onclick="selectAge('${a}')" class="${btnClass(f.age === a)}">${a}</button>
     `).join("");
 
     // Gender
-    const genders = ["Male", "Female", "Other", "Prefer not to say"];
-    document.getElementById("gender-group").innerHTML = genders.map(g => `
-      <button onclick="selectGender('${g}')" class="${btnClass(f.gender === g)}">${g}</button>
+    document.getElementById("form-gender-label").textContent = t.form_gender;
+    const genderOptions = [
+      { value: "Male",              label: t.gender_male   },
+      { value: "Female",            label: t.gender_female },
+      { value: "Other",             label: t.gender_other  },
+      { value: "Prefer not to say", label: t.gender_prefer },
+    ];
+    document.getElementById("gender-group").innerHTML = genderOptions.map(g => `
+      <button onclick="selectGender('${g.value}')" class="${btnClass(f.gender === g.value)}">${g.label}</button>
     `).join("");
   }
 
