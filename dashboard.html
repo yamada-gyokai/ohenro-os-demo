@@ -82,6 +82,18 @@
     <p id="log-count" class="text-gray-700 text-xs tracking-wide"></p>
   </footer>
 
+  <!-- ── ローディングオーバーレイ ── -->
+  <div
+    id="loading-overlay"
+    style="display:none;"
+    class="fixed inset-0 bg-white/70 backdrop-blur-sm z-50 flex items-center justify-center"
+  >
+    <div class="flex flex-col items-center gap-3">
+      <div class="w-5 h-5 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin"></div>
+      <p class="text-gray-400 text-xs tracking-[0.3em] uppercase">Loading</p>
+    </div>
+  </div>
+
   <script>
     let _map = null;
     let _fullscreen = false;
@@ -191,8 +203,14 @@
 
     // ── 描画 ─────────────────────────────────────────────
     async function render() {
-      const raw = await fetchLogs();
-      const d   = collectDashData(raw);
+      showLoading();
+      let raw = [];
+      try {
+        raw = await fetchLogs();
+      } finally {
+        hideLoading();
+      }
+      const d = collectDashData(raw);
 
       // フッター
       document.getElementById("log-count").textContent = `ログ ${d.total} 件`;
@@ -403,6 +421,14 @@
           L.polyline(latlngs, { color, weight: 4 }).addTo(_map);
         }
       });
+    }
+
+    function showLoading() {
+      document.getElementById("loading-overlay").style.display = "flex";
+    }
+
+    function hideLoading() {
+      document.getElementById("loading-overlay").style.display = "none";
     }
 
     function refresh() {
