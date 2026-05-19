@@ -78,12 +78,8 @@
   </section>
 
   <!-- ── フッター ── -->
-  <footer class="px-6 pb-8 max-w-3xl mx-auto flex items-center justify-between">
+  <footer class="px-6 pb-8 max-w-3xl mx-auto">
     <p id="log-count" class="text-gray-700 text-xs tracking-wide"></p>
-    <button
-      onclick="clearLogs()"
-      class="text-gray-700 text-xs tracking-wide hover:text-red-400 transition-colors"
-    >Clear logs</button>
   </footer>
 
   <script>
@@ -126,24 +122,6 @@
 
     // ── データ集計 ────────────────────────────────────────
     function collectDashData(raw) {
-
-      if (raw.length === 0) {
-        return {
-          isDemo:     true,
-          spotVisits: 18,
-          innSelects: 12,
-          innRanking: [
-            { name: (locationMaster.inns[0]?.name_ja || "宿A"), count: 6 },
-            { name: (locationMaster.inns[1]?.name_ja || "宿B"), count: 4 },
-            { name: (locationMaster.inns[2]?.name_ja || "宿C"), count: 2 },
-          ],
-          japan: 5, abroad: 7,
-          genderCounts: { Male: 4, Female: 6, Other: 1, "Prefer not to say": 1 },
-          ageCounts:    { "10s": 1, "20s": 4, "30s": 3, "40s": 3, "50+": 1 },
-          total: 0,
-          lastAt: null,
-        };
-      }
 
       // セッション数
       const sessions = new Set(raw.map(l => l.session_id).filter(Boolean)).size;
@@ -192,7 +170,6 @@
       const lastAt     = timestamps.at(-1) ?? null;
 
       return {
-        isDemo:     false,
         spotVisits: sessions,
         spot,
         innSelects: innSelectLogs.length,
@@ -217,14 +194,8 @@
       const raw = await fetchLogs();
       const d   = collectDashData(raw);
 
-      // デモ表示バッジ
-      if (d.isDemo) {
-        document.title = "お遍路OS — Dashboard (Demo)";
-      }
-
       // フッター
-      document.getElementById("log-count").textContent =
-        d.isDemo ? "⚠ ログなし — ダミーデータ表示中" : `ログ ${d.total} 件`;
+      document.getElementById("log-count").textContent = `ログ ${d.total} 件`;
       document.getElementById("updated-at").textContent =
         d.lastAt ? "最終: " + new Date(d.lastAt).toLocaleString("ja-JP", { month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit" }) : "";
 
@@ -435,10 +406,6 @@
     }
 
     function refresh() {
-      render();
-    }
-
-    function clearLogs() {
       render();
     }
 

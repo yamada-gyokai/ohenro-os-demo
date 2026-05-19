@@ -63,10 +63,6 @@ function sendLog(payload) {
     headers: { "Content-Type": "text/plain" },
     body:    JSON.stringify(payload),
   }).catch(() => {});
-
-  const logs = JSON.parse(localStorage.getItem("logs") || "[]");
-  logs.push(payload);
-  localStorage.setItem("logs", JSON.stringify(logs));
 }
 
 // ── ナビゲーション ──────────────────────────────────────
@@ -186,21 +182,6 @@ function submitForm() {
     gender:          state.form.gender,
     timestamp:       new Date().toISOString(),
   });
-
-  const log = {
-    coupon:    state.selectedCoupon,
-    region:    state.form.region,
-    country:   country,
-    age:       state.form.age,
-    gender:    state.form.gender,
-    timestamp: new Date().toISOString(),
-  };
-
-  const logs = JSON.parse(localStorage.getItem("logs") || "[]");
-  logs.push(log);
-  localStorage.setItem("logs", JSON.stringify(logs));
-
-  console.log("SAVED:", log);
 
   state.screen = "done";
   render();
@@ -536,20 +517,6 @@ function resolvePathLabel(path) {
 // ── ダッシュボードデータ集計 ─────────────────────────────
 function collectDashData(raw) {
 
-  // ログなし → PoC用ダミー
-  if (raw.length === 0) {
-    return {
-      spotVisits: 18,
-      innSelects: 12,
-      innRanking: [
-        { name: (state.currentLang === "ja" ? inns[0]?.name_ja : inns[0]?.name_en) || "Inn A", count: 6 },
-        { name: (state.currentLang === "ja" ? inns[1]?.name_ja : inns[1]?.name_en) || "Inn B", count: 4 },
-        { name: (state.currentLang === "ja" ? inns[2]?.name_ja : inns[2]?.name_en) || "Inn C", count: 2 },
-      ],
-      japan: 5, abroad: 7,
-    };
-  }
-
   const innSelectLogs = raw.filter(l => l.event === "inn_select");
   const sessions      = new Set(raw.map(l => l.session_id).filter(Boolean)).size;
 
@@ -593,14 +560,15 @@ function renderBars(data) {
 
 // ── QRパラメータから spot_visit を送信 ──────────────────
 const urlSpot = new URLSearchParams(window.location.search).get("spot");
+const _sentSpotVisits = new Set();
 
 (function sendSpotVisit() {
   const spot = urlSpot;
   if (!spot) return;
 
-  const flagKey = "spot_visit_sent_" + spot + "_" + state.session_id;
-  if (localStorage.getItem(flagKey)) return;
-  localStorage.setItem(flagKey, "1");
+  const flagKey = spot + "_" + state.session_id;
+  if (_sentSpotVisits.has(flagKey)) return;
+  _sentSpotVisits.add(flagKey);
 
   function doSend() {
     const spotData = (locationMaster.spots || []).find(s => s.id === spot);
